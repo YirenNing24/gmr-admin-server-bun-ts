@@ -52,6 +52,32 @@ export default class SearchService {
     }
   }
 
+
+  async getDocuments(indexName: string): Promise<any[] | Error> {
+    try {
+      const documents = await meili.index(indexName).getDocuments();
+      const results = documents.results
+      return results;
+    } catch (error) {
+      console.error(`Error fetching documents from index '${indexName}': ${error}`);
+      return new Error(`Error fetching documents from index '${indexName}': ${error}`);
+    }
+  }
+
+
+  async updateDocument(indexName: string, update: any) :Promise<void | Error> {
+    try {
+      await meili.
+      index(indexName).
+      updateDocuments(update);
+
+    } catch (error) {
+      console.error(`Error updating documents from index '${indexName}': ${error}`);
+      return new Error(`Error updating documents from index '${indexName}': ${error}`);
+    }
+  }
+
+
   async populatePlayerSearch(): Promise<string | Error> {
     try {
       const playerIndex = await meili.getIndex('playersAdmin');
