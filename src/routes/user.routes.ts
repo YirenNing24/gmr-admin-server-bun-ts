@@ -6,7 +6,7 @@ import UserService from "../services/user.service";
 
 
 
-const auth = (app: Elysia) => {
+const user = (app: Elysia) => {
 
     app.get('/admin/user/', async (context) => {
       try {
@@ -26,5 +26,5 @@ const auth = (app: Elysia) => {
     
   };
   
-  export default auth;
+  export default user;
   

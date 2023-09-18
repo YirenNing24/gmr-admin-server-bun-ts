@@ -14,16 +14,20 @@
   "dependencies": {
     "@elysiajs/cookie": "^0.6.1",
     "@elysiajs/cors": "^0.6.0",
-    "@thirdweb-dev/sdk": "^3.10.56",
+    "@thirdweb-dev/sdk": "^3.10.60",
     "@thirdweb-dev/storage": "^1.2.10",
+    "@thirdweb-dev/wallets": "^1.2.0",
     "bcrypt": "^5.1.1",
     "bcrypt-ts": "^4.0.0",
+    "cron": "^2.4.3",
     "crypto-random-string": "^5.0.0",
     "dotenv": "^16.3.1",
-    "elysia": "^0.6.20",
+    "elysia": "^0.6.23",
+    "ethers": "^5.7.0",
     "meilisearch": "^0.34.2",
     "nanoid": "^4.0.2",
     "neo4j-driver": "^5.12.0",
-    "redis": "^4.6.8"
+    "redis": "^4.6.8",
+    "scrypt-js": "^3.0.1"
   }
 }
