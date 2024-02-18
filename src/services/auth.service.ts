@@ -1,44 +1,41 @@
-import { Driver, Record } from "neo4j-driver-core";
+//** ERROR VALIDATION IMPORT
 import ValidationError from "../errors/validation.error";
+
+//** MEMGRAPH IMPORTS
+import { Driver, Record, Session, QueryResult, Node, RecordShape, ManagedTransaction } from "neo4j-driver-core";
+
+//** BCRYPT IMPORT
 import { compare } from 'bcrypt-ts';
-import { CookieRequest } from "@elysiajs/cookie";
 
 interface AuthenticationResponse {
-    safeProperties: {
-        admin: string;
-        userId: string;
-        username: string;
-    };
     success: string;
+    userProperties: UserProperties;
 }
 
-
+interface UserProperties {
+    admin: string;
+    userId: string;
+    username: string;
+}
 
 export default class AuthService {
-/**
- * @type {neo4j.Driver}
- */
-private driver: Driver;
 
-/**
- * The constructor expects an instance of the Neo4j Driver, which will be
- * used to interact with Neo4j.
- *
- * @param {neo4j.Driver} driver
- */
-constructor(driver: Driver) {
-    this.driver = driver;
-}
+    private driver: Driver;
 
-    async authenticate(userName: string, unencryptedPassword: string): Promise<object| Error> {
+    constructor(driver: Driver) {
+        this.driver = driver;
+    }
+
+    async authenticate(userName: string, unencryptedPassword: string): Promise<AuthenticationResponse | Error> {
         try {
             // Open a new session
-            const session = this.driver.session();
+            const session: Session = this.driver.session();
 
             // Find the user node within a Read Transaction
-            const result = await session.executeRead(tx =>
-                tx.run('MATCH (u:User {username: $userName}) RETURN u', { userName })
-            );
+            const result: QueryResult<RecordShape> = await session.executeRead(async (tx: ManagedTransaction) => {
+                const response = await tx.run('MATCH (u:User {username: $userName}) RETURN u', { userName });
+                return response;
+            });
 
             // Close the session
             await session.close();
@@ -49,20 +46,25 @@ constructor(driver: Driver) {
                 throw new ValidationError(`Authentication Error`, `User with username '${userName}' not found`);
             }
 
-            const user = userRecord.get('u');
+            const user: Node = userRecord.get('u');
             const encryptedPassword: string = user.properties.password;
             const correct: boolean = await compare(unencryptedPassword, encryptedPassword);
 
             if (!correct) {
                 throw new ValidationError('Authentication Error.', 'Incorrect password');
             }
-        // Return User Details 
-        const { password, ...safeProperties } = user.properties as {password: string, safeProperties: AuthenticationResponse}
 
-        return { safeProperties, "success": "You are now logged-in!" }
+            // Return User Details 
+            const safeProperties: UserProperties = {
+                admin: user.properties.admin,
+                userId: user.properties.userId,
+                username: user.properties.username,
+            };
+
+            return { userProperties: safeProperties, success: "You are now logged-in!" } as AuthenticationResponse
         } catch (error) {
             // Handle any errors that occur during authentication
-            return error;
+            return error as Error;
         }
     }
 }

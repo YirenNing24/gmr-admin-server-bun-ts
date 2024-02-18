@@ -30,14 +30,15 @@ const contracts = (app: Elysia ) => {
     }
   });
 
-  app.get('/admin/contracts', async (context) => {
+  app.get('/admin/contracts', async (_context) => {
     try {
         const driver: Driver = getDriver();
         const contractService: ContractService = new ContractService(driver)
-        const output = await contractService.contracts()
+        const output: Error | Contracts[] = await contractService.contracts()
+
       return output
     } catch (error) {
-        return error;
+      return error;
     }
   });
 

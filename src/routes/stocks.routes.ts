@@ -3,7 +3,7 @@ import { getDriver } from "../db/memgraph";
 import { Driver } from "neo4j-driver";
 import StockService from "../services/stocks.service";
 
-const stocks = (app: Elysia<any, any>) => {
+const stocks = (app: Elysia<any, any>): void => {
   app.get('/admin/card-list-all', async () => {
     try {
       const driver: Driver = getDriver();

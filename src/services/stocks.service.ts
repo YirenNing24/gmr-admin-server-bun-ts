@@ -41,8 +41,7 @@ constructor(driver: Driver) {
   
 }
 
-
-    async cardListAll(): Promise <any | Error> {
+    async cardListAll(): Promise <CardData[] | Error> {
         try {
             const session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx) =>
@@ -53,6 +52,7 @@ constructor(driver: Driver) {
             await session.close();
 
             const cards: CardData [] = res.records.map(record => record.get("c").properties);
+
             return cards
         } catch (error) {
             console.error('An error occurred:', error);
@@ -61,7 +61,7 @@ constructor(driver: Driver) {
     }
 
 
-    async cardListPosted(): Promise <any | Error> {
+    async cardListPosted(): Promise <CardData[]  | Error> {
         try {
             const session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx) =>
@@ -70,7 +70,8 @@ constructor(driver: Driver) {
             );
             await session.close();
 
-            const cards: CardData [] = res.records.map(record => record.get("c").properties);
+            const cards: CardData[] = res.records.map(record => record.get("c").properties);
+
             return cards
         } catch (error) {
             console.error('An error occurred:', error);
@@ -78,7 +79,7 @@ constructor(driver: Driver) {
         }
     }
 
-    async cardListSold(): Promise <any | Error> {
+    async cardListSold(): Promise <CardData[] | Error> {
         try {
             const session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx) =>
@@ -88,6 +89,7 @@ constructor(driver: Driver) {
             await session.close();
 
             const cards: CardData [] = res.records.map(record => record.get("c").properties);
+
             return cards
         } catch (error) {
             console.error('An error occurred:', error);
