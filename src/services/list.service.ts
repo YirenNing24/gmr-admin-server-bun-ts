@@ -1,4 +1,4 @@
-import { MarketplaceV3, ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { DirectListingV3, MarketplaceV3, ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../config/constants';
 import { Driver, QueryResult, Session } from 'neo4j-driver-core'
 
@@ -102,22 +102,13 @@ interface List {
 }
 
 export default class ListService {
-/**
- * @type {neo4j.Driver}
- */
+
 private driver: Driver;
 
-/**
- * The constructor expects an instance of the Neo4j Driver, which will be
- * used to interact with Neo4j.
- *
- * @param {neo4j.Driver} driver
- */
 constructor(driver: Driver) {
     this.driver = driver;
   
 }
-
     async listCard(listing: any): Promise<void | Error>  {
         try {  
             const {
@@ -135,7 +126,7 @@ constructor(driver: Driver) {
             } = listing;
 
             // Initiate sdk
-            const sdk = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
+            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
                 secretKey: SECRET_KEY
             });
 
@@ -173,10 +164,10 @@ constructor(driver: Driver) {
             // Create a listing on the marketplace
             await cardMarketplace.directListings.createListing(listingData)
 
-            const allListings = await cardMarketplace.directListings.getAllValid();
+            const allListings: DirectListingV3[] = await cardMarketplace.directListings.getAllValid();
 
             const session: Session = this.driver.session()
-            const res: QueryResult = await session.executeWrite(tx =>
+            await session.executeWrite(tx =>
                 tx.run(
                   `MATCH (c:Card {id: $id}), (u:User {username: $lister})
                    CREATE (c)-[:LISTED]->(u)

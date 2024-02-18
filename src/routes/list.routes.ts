@@ -27,6 +27,7 @@ const list = (app: Elysia): void => {
             const { listing } = context.body as { listing: Listing };
             const driver: Driver = getDriver();
             const listService: ListService = new ListService(driver);
+            
             const output: void | Error = await listService.listCard(listing);
             return output;
         } catch (error) {
