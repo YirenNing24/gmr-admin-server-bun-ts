@@ -6,44 +6,44 @@ import ContractService from '../services/contract.services/contracts.service';
 import { Contracts } from '../services/contract.services/contracts.interface'
 
 //** VALIDATOR SCHEMA IMPORT
-import { updateContractSchema } from '../services/contract.services/contract.schema';
+import { authorizationBearerSchema, updateContractSchema } from '../services/contract.services/contract.schema';
 
+const contracts = (app: Elysia): void => {
+    app.post('/admin/update-contracts', async ({ body, headers }): Promise<string | Error> => {
+        try {
+            const authorizationHeader: string = headers.authorization;
+            if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+                throw new Error('Bearer token not found in Authorization header');
+            }
 
-const contracts = (app: Elysia ): void => {
-  app.post('/admin/update-contracts', async ({ body, headers }): Promise<string | Error> => {
-    try {
+            const jwtToken: string = authorizationHeader.substring(7);
+            const contracts: Contracts = body as Contracts;
 
-        const authorizationHeader: string = headers.authorization;
-        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
-            throw new Error('Bearer token not found in Authorization header');
+            const contractService: ContractService = new ContractService();
+            const output: string | Error = await contractService.updateContracts(jwtToken, contracts);
+
+            return output as string | Error;
+        } catch (error: any) {
+            return error;
         }
-        const jwtToken: string = authorizationHeader.substring(7);
+    }, updateContractSchema);
 
-        const contracts: Contracts = body as Contracts;
+    app.get('/admin/contracts', async ({ headers }): Promise<Contracts[] | Error> => {
+        try {
+            const authorizationHeader: string = headers.authorization;
+            if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+                throw new Error('Bearer token not found in Authorization header');
+            }
 
-        const contractService: ContractService = new ContractService();
-        const output: string | Error = await contractService.updateContracts(jwtToken, contracts);
+            const jwtToken: string = authorizationHeader.substring(7);
+            const contractService: ContractService = new ContractService();
+            const output: Contracts[] | Error = await contractService.getContracts(jwtToken);
 
-      return output
-    } catch (error: any) {
-      return error;
-      }
-    }, updateContractSchema
-  );
-
-  // app.get('/admin/contracts', async (_context) => {
-  //   try {
-  //       const driver: Driver = getDriver();
-  //       const contractService: ContractService = new ContractService(driver)
-  //       const output: Error | Contracts[] = await contractService.contracts()
-
-  //     return output
-  //   } catch (error) {
-  //     return error;
-  //   }
-  // });
-
-
+            return output as Contracts[] | Error;
+        } catch (error: any) {
+          return error;
+        }
+    }, authorizationBearerSchema);
 };
 
 export default contracts;

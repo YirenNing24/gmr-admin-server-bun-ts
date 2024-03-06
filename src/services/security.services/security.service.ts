@@ -20,7 +20,7 @@ class SecurityService {
 
             const { access } = query as NewUser;
 
-            return access;
+            return access as string
         } catch (error: any) {
           return error;
         }

@@ -11,7 +11,7 @@ import SecurityService from '../security.services/security.service';
 import ValidationError from '../../errors/validation.error';
 ;
 
-export default class ContractService {
+class ContractService {
 
     public async updateContracts(token: string, contracts: Contracts): Promise<string | Error> {
         try {
@@ -29,7 +29,7 @@ export default class ContractService {
             const updatedContracts = { ...contracts, lastUpdate: Date.now() };
     
             await rt.db('admin')
-                .table('users')
+                .table('contracts')
                 .insert(updatedContracts)
                 .run(connection);
     
@@ -39,47 +39,35 @@ export default class ContractService {
             throw error;
         }
     }
-    
 
-    // async contracts(): Promise<Contracts[] | Error> {
-    //     try {
-    //         const session: Session = this.driver.session();
-    //         const res: QueryResult = await session.executeRead(tx =>
-    //             tx.run(
-    //             `MATCH (c:Contracts {id: 'contracts'})
-    //                 RETURN c.beatsAddress AS beatsAddress,
-    //                     c.kmrAddress AS kmrAddress,
-    //                     c.thumpinAddress AS thumpinAddress,
-    //                     c.cardAddress AS cardAddress,
-    //                     c.cardMarketplaceAddress AS cardMarketplaceAddress,
-    //                     c.packAddress AS packAddress,
-    //                     c.packMarketplaceAddress AS packMarketplaceAddress`
-    //             )
-    //         );
-    
-    //         // Check if any records were returned
-    //         if (res.records.length === 0) {
-    //             return new Error('No contract data found.');
-    //         }
-    
-    //         // Extract the contract data from the query result
-    //         const contractData = res.records[0].toObject();
-    
-    //         // Create a Contracts object with the extracted data
-    //         const contracts: Contracts[] = [{
-    //             beatsAddress: contractData.beatsAddress,
-    //             kmrAddress: contractData.kmrAddress,
-    //             thumpinAddress: contractData.thumpinAddress,
-    //             cardAddress: contractData.cardAddress,
-    //             cardMarketplaceAddress: contractData.cardMarketplaceAddress,
-    //             packAddress: contractData.packAddress,
-    //             packMarketplaceAddress: contractData.packMarketplaceAddress,
-    //         }];
-    
-    //         return contracts;
-    //     } catch (error) {
-    //         return new Error(`Error retrieving contracts: ${error}`);
-    //     }
-    // }
-    
+    public async getContracts(token: string): Promise<Contracts[] | Error> {
+        try {
+            const tokenService: TokenService = new TokenService();
+            const securityService: SecurityService = new SecurityService();
+
+            const username: string = await tokenService.verifyAccessToken(token);
+            const access: string = await securityService.checkAccess(username);
+
+            if (access !== "0" && access !== "1") {
+                return new ValidationError("Access Denied", "User does not have permission to get the contracts");
+            }
+
+            const connection: rt.Connection = await getRethinkDB();
+
+            const query: rt.Cursor = await rt.db('admin')
+                .table('contracts')
+                .orderBy(rt.desc('lastUpdate'))
+                .limit(2)
+                .run(connection);
+
+            const contracts: Contracts[] = await query.toArray()
+
+            return contracts as Contracts[]
+        } catch (error: any) {
+            console.error("Error getting latest update:", error);
+            throw error;
+        }
+    }
 }
+    
+export default ContractService;
