@@ -1,40 +1,45 @@
-import Elysia from "elysia";
-import { cookie } from '@elysiajs/cookie'
-import { getDriver } from '../db/memgraph';
-import { Driver } from 'neo4j-driver-core'
-import AuthService from "../services/auth.service";
+//** ELYSIA IMPORT
+import Elysia from 'elysia';
 
+//** SCHEMA AND TYPE INTEFACE IMPORT
+import { adminLoginSchema } from "./route.schema/auth.schema";
+import { Authentication, AuthenticationResponse } from "../services/user.services/interface";
 
-interface Authentication {
-    username: string;
-    password: string;
-}
+//** AUTH SERVICE IMPORT
+import AuthService from "../services/user.services/auth.service";
 
-interface AuthenticationResponse {
-    safeProperties: {
-        admin: string;
-        userId: string;
-        username: string;
-    };
-    success: string;
-}
+const auth = (app: Elysia): void => {
 
-const auth = (app: Elysia) => {
-
-    app.put('/admin/login/', async (context) => {
+    app.post('/admin/login/', async ({ body }): Promise<AuthenticationResponse | Error> => {
       try {
-        
-        const { username, password } = context.body as Authentication;
+        const { username, password } = body as Authentication
 
-        const driver: Driver = getDriver();
-        const authService: AuthService = new AuthService(driver);
-        const output: AuthenticationResponse = await authService.authenticate(username, password) as AuthenticationResponse
+        const authService: AuthService = new AuthService()
+        const output: AuthenticationResponse = await authService.authenticate(username, password)
 
-        return output as AuthenticationResponse
-      } catch (error) {
-        return error
-      } 
-    });
+        return output as AuthenticationResponse 
+      } catch (error: any) {
+        throw error
+        } 
+      }, adminLoginSchema
+    );
+
+
+    app.post('/admin/validate/session', async ({ body }): Promise<AuthenticationResponse | Error> => {
+      try {
+        const { username, password } = body as Authentication
+
+        const authService: AuthService = new AuthService()
+        const output: AuthenticationResponse = await authService.authenticate(username, password)
+
+        return output as AuthenticationResponse 
+      } catch (error: any) {
+        throw error
+        } 
+      }, adminLoginSchema
+    );
+
+
 
     
   };

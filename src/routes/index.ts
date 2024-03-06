@@ -9,15 +9,13 @@ import user from "./user.routes";
 
 
 const routes = (app: Elysia): void => {
-
     app.use(auth)
-    .use(mint)
-    .use(stocks)
-    .use(contracts)
-    .use(list)
-    .use(user)
-    .use(search)
-
+    app.use(mint)
+    app.use(stocks)
+    app.use(contracts)
+    app.use(list)
+    app.use(user)
+    app.use(search)
 };
 
 export default routes;

@@ -1,46 +1,47 @@
+//** ELYSIA IMPORT
 import Elysia from 'elysia';
-import { getDriver } from '../db/memgraph';
 
-import ContractService from '../services/contracts.service';
-import { Driver } from 'neo4j-driver';
+//** CONTRACT SERVICE IMPORT 
+import ContractService from '../services/contract.services/contracts.service';
+import { Contracts } from '../services/contract.services/contracts.interface'
 
-interface Contracts {
-    beatsAddress: string;
-    kmrAddress: string;
-    thumpinAddress: string;
-    cardAddress: string;
-    cardMarketplaceAddress: string;
-    packAddress: string;
-    packMarketplaceAddress: string;
-}
+//** VALIDATOR SCHEMA IMPORT
+import { updateContractSchema } from '../services/contract.services/contract.schema';
 
-const contracts = (app: Elysia ) => {
-  app.post('/admin/update-contracts', async (context) => {
+
+const contracts = (app: Elysia ): void => {
+  app.post('/admin/update-contracts', async ({ body, headers }): Promise<string | Error> => {
     try {
-        const contracts: Contracts = context.body as 
-        { beatsAddress: string, kmrAddress: string, thumpinAddress: string, cardAddress: string, 
-        cardMarketplaceAddress: string, packAddress: string, packMarketplaceAddress: string  }
 
-        const driver: Driver = getDriver();
-        const contractService: ContractService = new ContractService(driver);
-        const output = await  contractService.updateContracts(contracts)
-      return output
-    } catch (error) {
-      return(error);
-    }
-  });
+        const authorizationHeader: string = headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+            throw new Error('Bearer token not found in Authorization header');
+        }
+        const jwtToken: string = authorizationHeader.substring(7);
 
-  app.get('/admin/contracts', async (_context) => {
-    try {
-        const driver: Driver = getDriver();
-        const contractService: ContractService = new ContractService(driver)
-        const output: Error | Contracts[] = await contractService.contracts()
+        const contracts: Contracts = body as Contracts;
+
+        const contractService: ContractService = new ContractService();
+        const output: string | Error = await contractService.updateContracts(jwtToken, contracts);
 
       return output
-    } catch (error) {
+    } catch (error: any) {
       return error;
-    }
-  });
+      }
+    }, updateContractSchema
+  );
+
+  // app.get('/admin/contracts', async (_context) => {
+  //   try {
+  //       const driver: Driver = getDriver();
+  //       const contractService: ContractService = new ContractService(driver)
+  //       const output: Error | Contracts[] = await contractService.contracts()
+
+  //     return output
+  //   } catch (error) {
+  //     return error;
+  //   }
+  // });
 
 
 };

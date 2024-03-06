@@ -6,7 +6,7 @@
     "bun-types": "latest"
   },
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --watch src/index.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -17,6 +17,7 @@
     "@thirdweb-dev/sdk": "^4.0.27",
     "@thirdweb-dev/storage": "^1.2.10",
     "@thirdweb-dev/wallets": "^1.2.0",
+    "@types/rethinkdb": "^2.3.21",
     "bcrypt": "^5.1.1",
     "bcrypt-ts": "^5.0.1",
     "cron": "^3.1.6",
@@ -24,10 +25,12 @@
     "dotenv": "^16.3.1",
     "elysia": "^0.8.9",
     "ethers": "^5.7.0",
+    "fast-jwt": "^4.0.0",
     "meilisearch": "^0.37.0",
     "nanoid": "^5.0.4",
     "neo4j-driver": "^5.16.0",
     "redis": "^4.6.12",
+    "rethinkdb": "^2.4.2",
     "scrypt-js": "^3.0.1"
   }
 }

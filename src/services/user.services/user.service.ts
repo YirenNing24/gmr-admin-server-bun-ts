@@ -1,5 +1,5 @@
 import { Driver, QueryResult, Record } from "neo4j-driver";
-import ValidationError from "../errors/validation.error";
+import ValidationError from "../../errors/validation.error";
 
 export default class UserService {
 /**

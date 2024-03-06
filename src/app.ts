@@ -33,21 +33,8 @@ app.use(cors({
 
 
 
-
-
-
-
-
-//@ts-ignore
-initDriver(NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD);
-
 //@ts-ignore
 app.use(routes)
-
-
-
-
-
 
 
 
