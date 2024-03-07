@@ -13,7 +13,7 @@ import ValidationError from '../../errors/validation.error';
 
 class ContractService {
 
-    public async updateContracts(token: string, contracts: Contracts): Promise<string | Error> {
+    public async updateContracts(token: string, contracts: Contracts): Promise<any| Error> {
         try {
             const tokenService: TokenService = new TokenService();
             const securityService: SecurityService = new SecurityService();
@@ -26,14 +26,14 @@ class ContractService {
             }
     
             const connection: rt.Connection = await getRethinkDB();
-            const updatedContracts = { ...contracts, lastUpdate: Date.now() };
+            const updatedContracts = { ...contracts, lastUpdate: Date.now(), updatedBy: username };
     
             await rt.db('admin')
                 .table('contracts')
                 .insert(updatedContracts)
                 .run(connection);
     
-            return "Contracts updated successfully";
+            return { success: "Contracts address updated successfully" }
         } catch (error: any) {
             console.error("Error updating contracts:", error);
             throw error;

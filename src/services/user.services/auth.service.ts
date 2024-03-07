@@ -22,7 +22,7 @@ import TokenService from "./token.service";
 
 export default class AuthService {
 
-    async register(userRegistrationData: UserRegistrationData): Promise<void> {
+    public async register(userRegistrationData: UserRegistrationData): Promise<void> {
         try{
         const { access, username, email, password } = userRegistrationData
         const userId: string = nanoid()
@@ -51,10 +51,14 @@ export default class AuthService {
             // Open a new connection
             const connection: rt.Connection = await getRethinkDB();
 
-            const query = await rt.db('admin')
+            const query: object | null = await rt.db('admin')
             .table('users')
             .get(userName)
             .run(connection);
+
+            if (query === null) {
+                throw new ValidationError('User not found', 'User not found');
+            }
 
             const { access, username, email, encryptedPassword, registeredAt, userId } = query as NewUser
             
