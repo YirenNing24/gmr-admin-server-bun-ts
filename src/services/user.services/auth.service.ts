@@ -44,7 +44,7 @@ export default class AuthService {
         }
     };
 
-    public async authenticate(userName: string, unencryptedPassword: string): Promise<AuthenticationResponse> {
+    public async authenticate(userName: string, unencryptedPassword: string): Promise<AuthenticationResponse | Error> {
         try {
             
             const tokenService: TokenService = new TokenService()
@@ -84,7 +84,6 @@ export default class AuthService {
             return safeProperties  as AuthenticationResponse
         } 
         catch (error: any) {
-        console.error("Error in authentication:", error);
         return error
         }
     }

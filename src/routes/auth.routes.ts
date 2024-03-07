@@ -15,7 +15,7 @@ const auth = (app: Elysia): void => {
         const { username, password } = body as Authentication
 
         const authService: AuthService = new AuthService()
-        const output: AuthenticationResponse = await authService.authenticate(username, password)
+        const output: AuthenticationResponse | Error = await authService.authenticate(username, password)
 
         return output as AuthenticationResponse 
       } catch (error: any) {
@@ -30,7 +30,7 @@ const auth = (app: Elysia): void => {
         const { username, password } = body as Authentication
 
         const authService: AuthService = new AuthService()
-        const output: AuthenticationResponse = await authService.authenticate(username, password)
+        const output: AuthenticationResponse | Error = await authService.authenticate(username, password)
 
         return output as AuthenticationResponse 
       } catch (error: any) {

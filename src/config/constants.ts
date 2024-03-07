@@ -38,7 +38,7 @@ export const KDB: { host: string | undefined; port: string | number; password: s
 export const API_KEY: string | undefined = process.env.API_KEY;
 export const API_ID: string | undefined = process.env.API_ID;
 export const SECRET_KEY: string | undefined = process.env.SECRET_KEY;
-export const PRIVATE_KEY: string | undefined = process.env.THIRDWEB_AUTH_PRIVATE_KEY;
+export const PRIVATE_KEY: string  = process.env.THIRDWEB_AUTH_PRIVATE_KEY || ""
 
 // Chain and Wallet Factory Configuration
 export const CHAIN: typeof Mumbai = Mumbai;
