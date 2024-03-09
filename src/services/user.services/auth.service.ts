@@ -17,14 +17,27 @@ import { compare, hash } from 'bcrypt-ts';
 //** INTERFACE IMPORTS
 import { AuthenticationResponse, NewUser, UserProperties, UserRegistrationData } from "./interface";
 import { TokenScheme } from "./user.service.interface";
-import TokenService from "./token.service";
+
+//**  SERVICE IMPORTS
+import TokenService from "../security.services/token.service";
+import NotificationService from "../notification.services/notification.service";
+import { Notification } from "../notification.services/notification.interface";
+import { SuccessMessage } from "../mint.services/mint.interface";
 
 
 export default class AuthService {
 
-    public async register(userRegistrationData: UserRegistrationData): Promise<void> {
+    public async register(userRegistrationData: UserRegistrationData, token: string): Promise<SuccessMessage> {
         try{
-        const { access, username, email, password } = userRegistrationData
+
+        const tokenService: TokenService = new TokenService();
+        const userName: string = await tokenService.verifyAccessToken(token)
+
+        if (userName !== "kaetaro13") {
+            throw new ValidationError("Unauthorized", "Unauthorized")
+        }
+
+        const { access, username, email, password } = userRegistrationData as UserRegistrationData
         const userId: string = nanoid()
         const encryptedPassword: string = await hash(password, SALT_ROUNDS)
         const registeredAt: number = Date.now()
@@ -38,6 +51,8 @@ export default class AuthService {
           .insert(newUser)
           .run(connection);
 
+        return { success: "Contracts address updated successfully" }
+
         }
         catch(error: any) {
             throw error
@@ -48,6 +63,7 @@ export default class AuthService {
         try {
             
             const tokenService: TokenService = new TokenService()
+            const notificationServce: NotificationService = new NotificationService()
             // Open a new connection
             const connection: rt.Connection = await getRethinkDB();
 
@@ -81,10 +97,22 @@ export default class AuthService {
                  accessToken,
             };
 
+            const notification: Notification = {
+                username,
+                eventType: "status",
+                eventDescription: `${userName} is now online`,
+                timestamp: Date.now(),
+                success: true,
+                errorMessage: "",
+                blockchainTransactionId: ""
+            }
+
+
+            await notificationServce.insertNotification(notification)
             return safeProperties  as AuthenticationResponse
         } 
         catch (error: any) {
         return error
         }
-    }
+    };
 }

@@ -7,8 +7,6 @@ import { NewUser } from "../user.services/interface";
 
 
 class SecurityService {
-
-
     public async checkAccess(userName: string): Promise<string> {
         try {
             const connection: rt.Connection = await getRethinkDB();

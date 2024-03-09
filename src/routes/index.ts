@@ -6,7 +6,7 @@ import search from "./search.routes";
 import list from "./list.routes";
 import mint from "./mint.routes";
 import user from "./user.routes";
-
+import notifications from "./websocket.routes";
 
 const routes = (app: Elysia): void => {
     app.use(auth)
@@ -16,6 +16,7 @@ const routes = (app: Elysia): void => {
     app.use(list)
     app.use(user)
     app.use(search)
+    app.use(notifications)
 };
 
 export default routes;

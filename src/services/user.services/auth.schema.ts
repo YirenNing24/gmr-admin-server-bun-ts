@@ -11,5 +11,17 @@ import { t } from "elysia";
  * @property {string} body.password - The password for login.
  */
 export const adminLoginSchema = {
-    body: t.Object({ username: t.String(), password: t.String() })
+    body: t.Object({ 
+        username: t.String(), 
+        password: t.String() })
+}
+
+export const adminRegistrationSchema = {
+    headers: t.Object({ authorization: t.String() }),
+    body: t.Object({ 
+        username: t.String(), 
+        password: t.String(),
+        email: t.String(),
+        access: t.String()
+    })
 }

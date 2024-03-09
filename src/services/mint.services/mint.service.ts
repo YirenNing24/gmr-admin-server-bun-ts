@@ -11,7 +11,7 @@ import ValidationError from '../../errors/validation.error';
 
 //** SERVICE IMPORTS
 import SecurityService from '../security.services/security.service';
-import TokenService from '../user.services/token.service';
+import TokenService from '../security.services/token.service';
 import ContractService from '../contract.services/contracts.service'; 
 
 //** TYPE IMPORTS
@@ -307,7 +307,6 @@ export default class MintService {
             throw error;
         }
     };
-
 
     private async retrieveContracts(token: string): Promise<string> {
         const contractService: ContractService = new ContractService();

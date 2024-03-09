@@ -5,7 +5,7 @@ import { hash } from "bcrypt-ts";
 import { NewUser } from "../services/user.services/interface";
 
 // Replace this array with your actual data
-const tableNames: string[] = ['users', 'cardsMinted', 'cardsListed', 'bundleMinted', 'bundleListed', 'chat', 'contracts']
+const tableNames: string[] = ['users', 'cardsMinted', 'cardsListed', 'bundleMinted', 'bundleListed', 'chat', 'contracts', 'notifications']
 
 const createDatabaseAndTables = async (): Promise<void> => {
   try {
@@ -14,7 +14,6 @@ const createDatabaseAndTables = async (): Promise<void> => {
     const tableOptions: rt.TableOptions = {
       primary_key: 'username', // Replace 'your_primary_key' with the desired primary key
     };
-
 
     // Create the 'beats' database
     await rt.dbCreate('admin').run(connection)
