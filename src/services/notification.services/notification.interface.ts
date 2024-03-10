@@ -12,10 +12,10 @@
  */
 export interface Notification {
     username: string;
-    eventType: "status" | "mintCard";
+    eventType: "status" | "mintCard" |"registration" | "mintBundle";
     eventDescription: string;
-    timestamp: number;
     success: boolean;
     errorMessage?: string;
     blockchainTransactionId?: string;
+    id?: string;
 }

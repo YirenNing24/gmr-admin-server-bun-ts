@@ -26,21 +26,17 @@ constructor(websocket?: ElysiaWS<any>) {
         
                 const connection: rt.Connection = await getRethinkDB();
                 let query: rt.Sequence = rt.db('admin').table("notifications");
-
                     query.changes().run(connection, (error, cursor) => {
                     if (error) throw error;
-                    cursor.each((error, row)  => {
+                    cursor.each((error, row) => {
                         if (error) throw error;
                         if (row.new_val) {
-                        const notif_data = row.new_val;
-                            const notifData: string = JSON.stringify(notif_data);
-                            app.server?.publish('notificaitons', notifData)
+                        const notifNewVal: Notification = row.new_val;
+                        const notifData: string = JSON.stringify(notifNewVal);
+                        app.server?.publish('notifications', notifData)
                         }
                     })
                     });
-
-
-                
 
 
             } catch(error: any) {
@@ -52,9 +48,12 @@ constructor(websocket?: ElysiaWS<any>) {
 
         public async insertNotification(notification: Notification): Promise<void> {
             try{
+                const connection: rt.Connection = await getRethinkDB();
                 await rt.db('admin')
                 .table('notifications')
                 .insert({ ...notification, ts: Date.now() })
+                .run(connection);
+
             } catch(error: any) {
             throw error
             }

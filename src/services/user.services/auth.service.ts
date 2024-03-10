@@ -29,8 +29,11 @@ export default class AuthService {
 
     public async register(userRegistrationData: UserRegistrationData, token: string): Promise<SuccessMessage> {
         try{
-
+        
         const tokenService: TokenService = new TokenService();
+        const notificationServce: NotificationService = new NotificationService()
+
+
         const userName: string = await tokenService.verifyAccessToken(token)
 
         if (userName !== "kaetaro13") {
@@ -51,7 +54,21 @@ export default class AuthService {
           .insert(newUser)
           .run(connection);
 
-        return { success: "Contracts address updated successfully" }
+          const notification: Notification = {
+            username,
+            eventType: "registration",
+            eventDescription: `${username} has been registered`,
+            success: true,
+            errorMessage: "",
+            blockchainTransactionId: ""
+        }
+
+
+        await notificationServce.insertNotification(notification)
+       
+
+        return { success: "User successfully registered" }
+
 
         }
         catch(error: any) {
@@ -100,8 +117,7 @@ export default class AuthService {
             const notification: Notification = {
                 username,
                 eventType: "status",
-                eventDescription: `${userName} is now online`,
-                timestamp: Date.now(),
+                eventDescription: `online`,
                 success: true,
                 errorMessage: "",
                 blockchainTransactionId: ""
