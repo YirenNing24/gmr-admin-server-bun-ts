@@ -176,11 +176,10 @@ export interface SafeProperties {
    * @property {string} properties.userId - The unique identifier for the user.
    * @property {string} properties.username - The username chosen by the user.
    */
-export interface UserData {
+  export interface PlayerData {
     properties: {
-      anon: boolean;
+      signupDate: number
       cardInventory: CardInventory;
-      createdAt: number;
       email: string;
       firstName: string;
       lastName: string;
@@ -189,12 +188,24 @@ export interface UserData {
       password: string;
       playerStats: PlayerStats;
       powerUpInventory: PowerUpInventory;
-      profilePics: string[];
       userId: string;
       username: string;
+      suspended: Suspended
     };
   }
   
+
+    /**
+   * Represents the suspension status of a player's account.
+   *
+   * @interface Suspended
+   * @property {string} suspended - Shows a date if the account is suspended for whatever reason 
+   */
+  export interface Suspended {
+    until: number | null
+    reason: string 
+  }
+
   /**
    * Represents data related to a user's wallet.
    *

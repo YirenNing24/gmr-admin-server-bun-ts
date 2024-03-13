@@ -26,13 +26,11 @@ import { SuccessMessage } from "../mint.services/mint.interface";
 
 
 export default class AuthService {
-
     public async register(userRegistrationData: UserRegistrationData, token: string): Promise<SuccessMessage> {
         try{
         
         const tokenService: TokenService = new TokenService();
         const notificationServce: NotificationService = new NotificationService()
-
 
         const userName: string = await tokenService.verifyAccessToken(token)
 
@@ -79,15 +77,14 @@ export default class AuthService {
     public async authenticate(userName: string, unencryptedPassword: string): Promise<AuthenticationResponse | Error> {
         try {
             
-            const tokenService: TokenService = new TokenService()
-            const notificationServce: NotificationService = new NotificationService()
-            // Open a new connection
-            const connection: rt.Connection = await getRethinkDB();
+            const tokenService: TokenService = new TokenService();
+            const notificationServce: NotificationService = new NotificationService();
 
+            const connection: rt.Connection = await getRethinkDB();
             const query: object | null = await rt.db('admin')
-            .table('users')
-            .get(userName)
-            .run(connection);
+                .table('users')
+                .get(userName)
+                .run(connection);
 
             if (query === null) {
                 throw new ValidationError('User not found', 'User not found');
