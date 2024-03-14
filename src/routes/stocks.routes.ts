@@ -1,6 +1,11 @@
+//** ELYSIA IMPORT
 import Elysia from "elysia";
+
+//** DRIVER IMPORT
 import { getDriver } from "../db/memgraph";
 import { Driver } from "neo4j-driver";
+
+//** SERVICE IMPORT
 import StockService from "../services/stocks.service";
 
 const stocks = (app: Elysia<any, any>): void => {

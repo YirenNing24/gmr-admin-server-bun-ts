@@ -17,46 +17,50 @@ import ContractService from '../contract.services/contracts.service';
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
 import { Buffer } from "buffer";
-import { PlayerData } from '../user.services/user.service.interface';
+import { PlayerData, Skip } from './player.interface';
 
 
+class PlayerService {
 
-class PlayerServices {
     private driver: Driver;
     constructor(driver: Driver) {
         this.driver = driver;
     }
 
-
-    public async getPlayers(skip: number): Promise<PlayerData[]> {
+    public async getPlayers(skipAmount: Skip, token: string): Promise<PlayerData[]> {
+        const tokenService: TokenService = new TokenService();
+        await tokenService.verifyAccessToken(token);
+    
         try {
             const session: Session = this.driver.session();
-            // Find the user node within a Read Transaction
+            const { skip } = skipAmount as Skip;
+    
+            // Find the user nodes within a Read Transaction
             const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
                 tx.run(`MATCH (u:User) RETURN u SKIP ${skip} LIMIT 10`)
             );
     
             await session.close();
-            // Verify the user exists
+    
+            // Verify the users exist
             if (result.records.length === 0) {
                 throw new ValidationError(`No players found.`, "");
             }
     
-            // Compare Passwords
-            const players: PlayerData[] = result.records[0].get('u')
-
-            // Return User Details
-            // const { password, localWallet, localWalletKey, playerStats, userId, username, cardInventory, powerUpInventory, ...safeProperties } = users.properties
-
-            return players as PlayerData[]
-            console.log(players)
-
+            // Extract properties from each user node
+            const players: PlayerData[] = result.records.map(record => record.get('u').properties);
+    
+            // Log user properties
+            console.log(players);
+    
+            return players;
+    
         } catch (error: any) {
-          throw error;
+            throw error;
         }
-
     }
+    
 
 }
 
-export default PlayerServices
+export default PlayerService

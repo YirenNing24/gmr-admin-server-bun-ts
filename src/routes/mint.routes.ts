@@ -9,7 +9,6 @@ import { SuccessMessage } from '../services/mint.services/mint.interface';
 const mint = (app: Elysia ) => {
     app.post('/admin/mint-card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
         try {
-            console.log(body)
             const authorizationHeader: string = headers.authorization;
             if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
                 throw new Error('Bearer token not found in Authorization header');

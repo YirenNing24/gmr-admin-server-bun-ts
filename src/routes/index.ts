@@ -2,10 +2,10 @@ import Elysia from "elysia";// Replace "express" with your actual dependency if 
 import stocks from "./stocks.routes";
 import auth from "./auth.routes";
 import contracts from "./contracts.routes";
-import search from "./search.routes";
+
 import list from "./list.routes";
 import mint from "./mint.routes";
-import user from "./user.routes";
+import user from "./player.routes";
 import notifications from "./websocket.routes";
 
 const routes = (app: Elysia): void => {
@@ -15,7 +15,6 @@ const routes = (app: Elysia): void => {
     app.use(contracts)
     app.use(list)
     app.use(user)
-    app.use(search)
     app.use(notifications)
 };
 

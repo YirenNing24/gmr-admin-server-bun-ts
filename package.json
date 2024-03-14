@@ -26,7 +26,6 @@
     "elysia": "^0.8.9",
     "ethers": "^5.7.0",
     "fast-jwt": "^4.0.0",
-    "meilisearch": "^0.37.0",
     "nanoid": "^5.0.4",
     "neo4j-driver": "^5.16.0",
     "rethinkdb": "^2.4.2",

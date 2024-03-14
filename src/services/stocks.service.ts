@@ -25,20 +25,9 @@ interface CardData {
   
   
 export default class StockService {
-/**
- * @type {neo4j.Driver}
- */
 private driver: Driver;
-
-/**
- * The constructor expects an instance of the Neo4j Driver, which will be
- * used to interact with Neo4j.
- *
- * @param {neo4j.Driver} driver
- */
 constructor(driver: Driver) {
     this.driver = driver;
-  
 }
 
     async cardListAll(): Promise <CardData[] | Error> {

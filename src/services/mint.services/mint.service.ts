@@ -57,7 +57,8 @@ export default class MintService {
                     skill, tier, breakthrough,
                     stars, supply, imageByte, experience } = createCardData as CreateCard;
 
-            const buffer: Buffer = Buffer.from(imageByte);
+            const byteImage: number[] = JSON.parse(imageByte);
+            const buffer: Buffer = Buffer.from(byteImage);
             const [imageURI, cardContract] = await Promise.all([
                 storage.upload(buffer),
                 sdk.getContract(editionAddress, 'edition'),
@@ -81,14 +82,14 @@ export default class MintService {
                     tier,
                     breakthrough,
                     stars,
-                    uploader: username
+                    uploader: "beats"
                 }
             });
 
             await cardContract.erc1155.mintBatch(metadataWithSupply)
             const stocks: NFT[] = await cardContract.erc1155.getOwned()
 
-            await this.saveCardToMemgraph(stocks, editionAddress)
+            await this.saveCardToMemgraph(stocks, editionAddress, username)
             return { success: "Card mint is successful" } as SuccessMessage
 
         } catch (error: any) {
@@ -96,7 +97,7 @@ export default class MintService {
         }
     };
 
-    private async saveCardToMemgraph(stocks: NFT[], editionAddress: string) {
+    private async saveCardToMemgraph(stocks: NFT[], editionAddress: string, uploaderBeats: string) {
         try {
             for (const card of stocks) {
                 const {
@@ -153,13 +154,13 @@ export default class MintService {
                 c.supply = $supply,
                 c.type = $type,
                 c.stars = $stars,
-                c.uploader = $uploader
+                c.uploader = $uploaderBeats
               RETURN c
               `, { id,breakthrough, editionAddress, description,
                     era, experience, healboost, image, level,
                     name, position, position2, rarity, scoreboost,
                     skill, tier, uri, owner, quantityOwned, supply,
-                    type, stars, uploader,
+                    type, stars, uploaderBeats,
                         }
                     )
                 );
