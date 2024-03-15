@@ -62,3 +62,25 @@ interface Meta {
     breakthrough: string
     stars: string
   }
+
+
+export interface CardData {
+    name: string;
+    description: string;
+    image: string;
+    id: string;
+    uri: string;
+    era: string;
+    experience: string;
+    healboost: string;
+    level: string;
+    position: string;
+    position2: string;
+    scoreboost: string;
+    skill: string;
+    rarity: string;
+    tier: string;
+    stars: string;
+    type: string;
+    supply: string;
+  }

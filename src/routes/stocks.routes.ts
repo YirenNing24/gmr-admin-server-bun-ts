@@ -7,27 +7,28 @@ import { Driver } from "neo4j-driver";
 
 //** SERVICE IMPORT
 import StockService from "../services/stocks.service";
+import { CardData } from "../services/mint.services/mint.schema";
 
 const stocks = (app: Elysia<any, any>): void => {
-  app.get('/admin/card-list-all', async () => {
+  app.get('/admin/card/list/all', async () => {
     try {
-      const driver: Driver = getDriver();
-      const stockService = new StockService(driver);
-      const output = await stockService.cardListAll();
+      const driver = getDriver() as Driver
+      const stockService: StockService = new StockService(driver);
+      const output: CardData[] | Error = await stockService.cardListAll();
 
-      return output
-    } catch (error) {
+      return output as CardData[] | Error
+    } catch (error: any) {
       return error
     }
   });
 
-  app.get('/admin/card-list-posted', async () => {
+  app.get('/admin/card/list/posted', async () => {
     try {
-      const driver: Driver = getDriver()
+      const driver = getDriver() as Driver
       const stockService = new StockService(driver);
-      const output = await stockService.cardListPosted();
+      const output: CardData[] | Error = await stockService.cardListPosted();
       
-      return output;
+      return output as CardData[] | Error
     } catch (error) {
       return error
     }
@@ -35,12 +36,12 @@ const stocks = (app: Elysia<any, any>): void => {
 
   app.get('/admin/card-list-sold', async () => {
     try {
-      const driver: Driver = getDriver()
+      const driver = getDriver() as Driver
       const stockService = new StockService(driver);
-      const output = await stockService.cardListSold();
+      const output: CardData[] | Error = await stockService.cardListSold();
       
-      return output
-    } catch (error) {
+      return output as CardData[] | Error
+    } catch (error: any) {
       return error;
     }
   });

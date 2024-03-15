@@ -89,7 +89,9 @@ export default class MintService {
             await cardContract.erc1155.mintBatch(metadataWithSupply)
             const stocks: NFT[] = await cardContract.erc1155.getOwned()
 
-            await this.saveCardToMemgraph(stocks, editionAddress, username)
+            console.log(stocks)
+
+            await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte)
             return { success: "Card mint is successful" } as SuccessMessage
 
         } catch (error: any) {
@@ -97,7 +99,7 @@ export default class MintService {
         }
     };
 
-    private async saveCardToMemgraph(stocks: NFT[], editionAddress: string, uploaderBeats: string) {
+    private async saveCardToMemgraph(stocks: NFT[], editionAddress: string, uploaderBeats: string, imageByte: string) {
         try {
             for (const card of stocks) {
                 const {
@@ -154,13 +156,14 @@ export default class MintService {
                 c.supply = $supply,
                 c.type = $type,
                 c.stars = $stars,
-                c.uploader = $uploaderBeats
+                c.uploader = $uploaderBeats,
+                c.imageByte = $imageByte
               RETURN c
               `, { id,breakthrough, editionAddress, description,
                     era, experience, healboost, image, level,
                     name, position, position2, rarity, scoreboost,
                     skill, tier, uri, owner, quantityOwned, supply,
-                    type, stars, uploaderBeats,
+                    type, stars, uploaderBeats, imageByte
                         }
                     )
                 );
