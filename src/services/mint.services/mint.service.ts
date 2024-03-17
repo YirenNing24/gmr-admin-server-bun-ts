@@ -55,7 +55,7 @@ export default class MintService {
                     level, name, position,
                     position2, rarity, scoreboost,
                     skill, tier, breakthrough,
-                    stars, supply, imageByte, experience } = createCardData as CreateCard;
+                    stars, supply, imageByte, experience, awakenCount, boostCount, slot, artist, group } = createCardData as CreateCard;
 
             const byteImage: number[] = JSON.parse(imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
@@ -71,9 +71,14 @@ export default class MintService {
                     description,
                     image: imageURI,
                     era,
+                    group,
                     experience,
                     healboost,
+                    artist,
+                    slot,
                     level,
+                    awakenCount,
+                    boostCount,
                     position,
                     position2,
                     scoreboost,
@@ -88,8 +93,6 @@ export default class MintService {
 
             await cardContract.erc1155.mintBatch(metadataWithSupply)
             const stocks: NFT[] = await cardContract.erc1155.getOwned()
-
-            console.log(stocks)
 
             await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte)
             return { success: "Card mint is successful" } as SuccessMessage
@@ -110,8 +113,13 @@ export default class MintService {
                         era,
                         experience,
                         healboost,
+                        artist,
+                        slot,
                         image,
+                        group,
                         level,
+                        awakenCount,
+                        boostCount,
                         name,
                         position,
                         position2,
@@ -141,8 +149,13 @@ export default class MintService {
                 c.era = $era,
                 c.experience = $experience,
                 c.healboost = $healboost,
+                c.artist = $artist,
+                c.slot = $slot,
+                c.group = $group,
                 c.image = $image,
                 c.level = $level,
+                c.awakenCount = $awakenCount,
+                c.boostCount = $boostCount,
                 c.name = $name,
                 c.position = $position,
                 c.position2 = $position2,
@@ -160,7 +173,7 @@ export default class MintService {
                 c.imageByte = $imageByte
               RETURN c
               `, { id,breakthrough, editionAddress, description,
-                    era, experience, healboost, image, level,
+                    era, experience, healboost, slot, artist, group, image, level, awakenCount, boostCount,
                     name, position, position2, rarity, scoreboost,
                     skill, tier, uri, owner, quantityOwned, supply,
                     type, stars, uploaderBeats, imageByte

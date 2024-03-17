@@ -21,7 +21,7 @@ const mint = (app: Elysia ) => {
 
           return output as SuccessMessage | Error
         } catch (error: any) {
-          return error
+          throw error
         }
         }, createCardSchema
     );

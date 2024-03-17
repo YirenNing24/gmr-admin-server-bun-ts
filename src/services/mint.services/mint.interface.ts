@@ -23,15 +23,20 @@ export interface CreateCard {
         description: string;
         era: string;
         healboost: string;
+        artist: string; 
         level: string;
         name: string;
+        group: string;
         position: string;   
         position2: string;
         rarity: string;
         scoreboost: string;
+        slot: string;
+        awakenCount: string;
+        boostCount: string;
         skill: string;
         tier: string;
-        breakthrough: string;
+        breakthrough: boolean;
         stars: string;
         experience: string
         supply: number;

@@ -27,41 +27,30 @@ import { t } from "elysia";
 export const createCardSchema = {
     headers: t.Object({ authorization: t.String() }),
     body: t.Object({ 
+        name: t.String(),
         description: t.String(),
         era: t.String(), 
+        group: t.String(),
+        artist: t.String(),
         healboost: t.String(),
+        slot: t.String(),
         level: t.String(),
-        name: t.String(),
+        awakenCount: t.String(),
+        boostCount: t.String(),
         position: t.String(),
-        position2: t.String(),
+        position2: t.String(),  
         rarity: t.String(),
         scoreboost: t.String(),
         skill: t.String(),
         tier: t.String(),
-        breakthrough: t.String(),
-        experience: t.String(),
+        breakthrough: t.Boolean(),
         stars: t.String(),
+        experience: t.String(),
         supply: t.Number(),
         imageByte: t.String()
     })
 };
 
-interface Meta {
-    description: string;
-    era: string;
-    experience: string;
-    healboost: string;
-    level: string;
-    name: string;
-    position: string;
-    position2: string;
-    rarity: string;
-    scoreboost: string;
-    skill: string;
-    tier: string;
-    breakthrough: string
-    stars: string
-  }
 
 
 export interface CardData {
@@ -73,6 +62,7 @@ export interface CardData {
     era: string;
     experience: string;
     healboost: string;
+    group: string;
     level: string;
     position: string;
     position2: string;
