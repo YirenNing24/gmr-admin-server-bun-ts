@@ -2,7 +2,7 @@
 import { Driver, Session } from 'neo4j-driver-core'
 
 //** THIRDWEB IMPORTS */
-import { Edition, NFT, Pack, ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { Edition, NFT, Pack, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
 import { SECRET_KEY, PRIVATE_KEY } from '../../config/constants';
 
@@ -12,12 +12,14 @@ import ValidationError from '../../errors/validation.error';
 //** SERVICE IMPORTS
 import SecurityService from '../security.services/security.service';
 import TokenService from '../security.services/token.service';
-import ContractService from '../contract.services/contracts.service'; 
+import ContractService from '../contract.services/contracts.service';
+import NotificationService from '../notification.services/notification.service';
 
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
 import { CardBundleData, CardField, CreateCard, MetadataWithSupply, SuccessMessage } from './mint.interface';
 import { Buffer } from "buffer";
+import { Notification } from '../notification.services/notification.interface';
 
 export default class MintService {
 
@@ -27,12 +29,14 @@ export default class MintService {
     }
 
     public async createCard(token: string, createCardData: CreateCard): Promise < SuccessMessage | Error > {
-        try {
-            const tokenService: TokenService = new TokenService();
-            const securityService: SecurityService = new SecurityService();
+        const tokenService: TokenService = new TokenService();
+        const securityService: SecurityService = new SecurityService();
+        const notificationService: NotificationService = new NotificationService();
 
-            const username: string = await tokenService.verifyAccessToken(token);
-            const access: string = await securityService.checkAccess(username);
+        const username: string = await tokenService.verifyAccessToken(token);
+        const access: string = await securityService.checkAccess(username);
+        try {
+
             if (access !== "0") {
                 return new ValidationError("Access Denied", "User does not have permission to update contracts");
             }
@@ -91,16 +95,42 @@ export default class MintService {
                 }
             });
 
-            await cardContract.erc1155.mintBatch(metadataWithSupply)
+            const transaction: TransactionResultWithId<NFT>[] = await cardContract.erc1155.mintBatch(metadataWithSupply)
+            const receipt = transaction[0].receipt;
             const stocks: NFT[] = await cardContract.erc1155.getOwned()
 
             await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte)
+
+
+            const notification: Notification = {
+                username,
+                eventType: "mintCard",
+                timestamp: Date.now(),
+                eventDescription: `${username} has successfully minted ${supply} pcs of ${name}`,
+                success: true,
+                errorMessage: "",
+                blockchainTransactionId: receipt  
+            }
+
+            await notificationService.insertNotification(notification)
             return { success: "Card mint is successful" } as SuccessMessage
 
         } catch (error: any) {
+            const notification: Notification = {
+                username,
+                eventType: "mintCard",
+                timestamp: Date.now(),
+                eventDescription: "Minting failed",
+                success: false,
+                errorMessage: error,
+                blockchainTransactionId: ""  
+            }
+            await notificationService.insertNotification(notification)
           throw error
         }
     };
+
+    
 
     private async saveCardToMemgraph(stocks: NFT[], editionAddress: string, uploaderBeats: string, imageByte: string) {
         try {
