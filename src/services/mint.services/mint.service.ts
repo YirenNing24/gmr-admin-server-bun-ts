@@ -1,5 +1,5 @@
 //**MEMGRAPH IMPORTs
-import { Driver, Session } from 'neo4j-driver-core'
+import { Driver, Session, ManagedTransaction } from 'neo4j-driver-core'
 
 //** THIRDWEB IMPORTS */
 import { Edition, NFT, Pack, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
@@ -13,13 +13,11 @@ import ValidationError from '../../errors/validation.error';
 import SecurityService from '../security.services/security.service';
 import TokenService from '../security.services/token.service';
 import ContractService from '../contract.services/contracts.service';
-import NotificationService from '../notification.services/notification.service';
 
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
 import { CardBundleData, CardField, CreateCard, MetadataWithSupply, SuccessMessage } from './mint.interface';
 import { Buffer } from "buffer";
-import { Notification } from '../notification.services/notification.interface';
 
 export default class MintService {
 
@@ -31,20 +29,18 @@ export default class MintService {
     public async createCard(token: string, createCardData: CreateCard): Promise < SuccessMessage | Error > {
         const tokenService: TokenService = new TokenService();
         const securityService: SecurityService = new SecurityService();
-        const notificationService: NotificationService = new NotificationService();
 
         const username: string = await tokenService.verifyAccessToken(token);
         const access: string = await securityService.checkAccess(username);
         try {
-
             if (access !== "0") {
                 return new ValidationError("Access Denied", "User does not have permission to update contracts");
-            }
+            };
 
             const editionAddress: string = await this.retrieveContracts(token)
             if (!editionAddress) {
                 throw new Error("Edition address is undefined");
-            }
+            };
 
             const storage: ThirdwebStorage = new ThirdwebStorage({
                 secretKey: SECRET_KEY,
@@ -54,178 +50,86 @@ export default class MintService {
                 secretKey: SECRET_KEY,
             });
 
-            const { 
-                    description, era, healboost,
-                    level, name, position,
-                    position2, rarity, scoreboost,
-                    skill, tier, breakthrough,
-                    stars, supply, imageByte, experience, awakenCount, boostCount, slot, artist, group } = createCardData as CreateCard;
-
-            const byteImage: number[] = JSON.parse(imageByte);
+            const imageByte: string = createCardData.imageByte
+            const byteImage: number[] = JSON.parse(createCardData.imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
             const [imageURI, cardContract] = await Promise.all([
                 storage.upload(buffer),
                 sdk.getContract(editionAddress, 'edition'),
             ]);
 
+            const supply: number = createCardData.supply
             const metadataWithSupply: MetadataWithSupply[] = Array(supply).fill({
                 supply,
-                metadata: {
-                    name,
-                    description,
+                metadata: { 
+                    ...createCardData, 
                     image: imageURI,
-                    era,
-                    group,
-                    experience,
-                    healboost,
-                    artist,
-                    slot,
-                    level,
-                    awakenCount,
-                    boostCount,
-                    position,
-                    position2,
-                    scoreboost,
-                    skill,
-                    rarity,
-                    tier,
-                    breakthrough,
-                    stars,
                     uploader: "beats"
                 }
             });
 
-            const transaction: TransactionResultWithId<NFT>[] = await cardContract.erc1155.mintBatch(metadataWithSupply)
-            const receipt = transaction[0].receipt;
+            await cardContract.erc1155.mintBatch(metadataWithSupply)
             const stocks: NFT[] = await cardContract.erc1155.getOwned()
 
             await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte)
 
 
-            const notification: Notification = {
-                username,
-                eventType: "mintCard",
-                timestamp: Date.now(),
-                eventDescription: `${username} has successfully minted ${supply} pcs of ${name}`,
-                success: true,
-                errorMessage: "",
-                blockchainTransactionId: receipt  
-            }
-
-            await notificationService.insertNotification(notification)
             return { success: "Card mint is successful" } as SuccessMessage
 
         } catch (error: any) {
-            const notification: Notification = {
-                username,
-                eventType: "mintCard",
-                timestamp: Date.now(),
-                eventDescription: "Minting failed",
-                success: false,
-                errorMessage: error,
-                blockchainTransactionId: ""  
-            }
-            await notificationService.insertNotification(notification)
           throw error
         }
     };
-
-    
 
     private async saveCardToMemgraph(stocks: NFT[], editionAddress: string, uploaderBeats: string, imageByte: string) {
         try {
-            for (const card of stocks) {
-                const {
-                    metadata: {
-                        id,
-                        breakthrough,
-                        description,
-                        era,
-                        experience,
-                        healboost,
-                        artist,
-                        slot,
-                        image,
-                        group,
-                        level,
-                        awakenCount,
-                        boostCount,
-                        name,
-                        position,
-                        position2,
-                        rarity,
-                        scoreboost,
-                        skill,
-                        tier,
-                        uri,
-                        stars,
-                        uploader,
-                    },
-                    owner,
-                    quantityOwned,
-                    supply,
-                    type
-                } = card;
+            const session: Session = this.driver.session();
+            await session.executeWrite(async (tx: ManagedTransaction) => {
+                for (const card of stocks) {
+                    const {
+                        metadata,
+                        owner,
+                        quantityOwned,
+                        supply,
+                        type
+                    } = card;
     
-                const session: Session = this.driver.session()
-                await session.executeWrite(
-                    tx => tx.run(
+                    const parameters = {
+                        ...metadata,
+                        editionAddress,
+                        owner,
+                        quantityOwned,
+                        supply,
+                        type,
+                        uploaderBeats,
+                        imageByte
+                    };
+    
+                    await tx.run(
                         `
-              MERGE (c:Card {id: $id})
-              ON CREATE SET
-                c.breakthrough = $breakthrough,
-                c.cardAddress = $editionAddress,
-                c.description = $description,
-                c.era = $era,
-                c.experience = $experience,
-                c.healboost = $healboost,
-                c.artist = $artist,
-                c.slot = $slot,
-                c.group = $group,
-                c.image = $image,
-                c.level = $level,
-                c.awakenCount = $awakenCount,
-                c.boostCount = $boostCount,
-                c.name = $name,
-                c.position = $position,
-                c.position2 = $position2,
-                c.rarity = $rarity,
-                c.scoreboost = $scoreboost,
-                c.skill = $skill,
-                c.tier = $tier,
-                c.uri = $uri,
-                c.owner = $owner,
-                c.quantityOwned = $quantityOwned,
-                c.supply = $supply,
-                c.type = $type,
-                c.stars = $stars,
-                c.uploader = $uploaderBeats,
-                c.imageByte = $imageByte
-              RETURN c
-              `, { id,breakthrough, editionAddress, description,
-                    era, experience, healboost, slot, artist, group, image, level, awakenCount, boostCount,
-                    name, position, position2, rarity, scoreboost,
-                    skill, tier, uri, owner, quantityOwned, supply,
-                    type, stars, uploaderBeats, imageByte
-                        }
-                    )
-                );
-                await session.executeWrite((tx) =>
-                    tx.run(
-                        `MATCH (p:Card {id: $id})
-                         MATCH (u:User {username: $uploader})
-                         MERGE (p)-[:UPLOADED]->(u)`,
-                          { id, uploader
-                        }
-                    )
-                );
-                await session.close()
-            }
-        } catch(error: any) {
-          throw error
+                        MERGE (c:Card {id: $id})
+                        ON CREATE SET
+                            c += $parameters
+                        RETURN c
+                        `, { id: metadata.id, parameters }
+                    );
+    
+                    await tx.run(
+                        `
+                        MATCH (p:Card {id: $id})
+                        MATCH (u:User {username: $uploader})
+                        MERGE (p)-[:UPLOADED]->(u)
+                        `, { id: metadata.id, uploader: owner }
+                    );
+                }
+            });
+            await session.close();
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
-
-    };
+    }
+    
 
     public async createCardBox(cardBoxData: CardBundleData, base64Image: string, cardFields: CardField[], uploader: string, packAddress: string): Promise < void | Error > {
         try {

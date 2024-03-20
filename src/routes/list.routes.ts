@@ -1,39 +1,30 @@
-import ListService from '../services/list.service';
+import ListService from '../services/list.services/list.service';
 import { getDriver } from '../db/memgraph';
 import { Driver } from 'neo4j-driver-core';
 import Elysia from 'elysia';
+import { SuccessMessage } from '../services/mint.services/mint.interface';
+import { ListingData } from '../services/list.services/list.interface';
+import { listCardSchema } from '../services/list.services/list.schema';
 
-interface ListingMetadata {
-    currencyName: string;
-    assetContractAddress: string;
-    tokenId: string;
-    currencyContractAddress: string;
-    pricePerToken: number;
-    startTimestamp: Date;
-    endTimestamp: Date;
-    isReservedListing: boolean;
-    id: string;
-    lister: string;
-    cardMarketplaceAddress: string;
-}
-
-interface Listing {
-    metadata: ListingMetadata;
-}
 
 const list = (app: Elysia): void => {
-    app.post('/admin/list-card', async (context) => {
+    app.post('/admin/list-card', async ({ headers, body}): Promise<SuccessMessage | Error> => {
         try {
-            const { listing } = context.body as { listing: Listing };
-            const driver: Driver = getDriver();
+            const authorizationHeader: string | undefined = headers.authorization;
+            if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+                throw new Error('Bearer token not found in Authorization header');
+            }
+            const jwtToken: string = authorizationHeader.substring(7);
+            const driver: Driver = getDriver() as Driver
             const listService: ListService = new ListService(driver);
             
-            const output: void | Error = await listService.listCard(listing);
+            const output: SuccessMessage | Error = await listService.listCard(body, jwtToken);
             return output;
-        } catch (error) {
-            return error;
+        } catch (error: any) {
+          return error;
         }
-    });
+      }, listCardSchema
+    );
 };
 
 export default list;

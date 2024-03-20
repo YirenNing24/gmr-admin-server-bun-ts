@@ -15,7 +15,7 @@ const routes = (app: Elysia): void => {
     app.use(contracts)
     app.use(list)
     app.use(user)
-    app.use(notifications)
+    // app.use(notifications)
 };
 
 export default routes;
