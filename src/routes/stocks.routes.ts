@@ -10,7 +10,7 @@ import StockService from "../services/stocks.service";
 import { CardData } from "../services/mint.services/mint.schema";
 
 const stocks = (app: Elysia<any, any>): void => {
-  app.get('/admin/card/list/all', async () => {
+  app.get('/admin/card/list/listed', async () => {
     try {
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);
@@ -29,7 +29,7 @@ const stocks = (app: Elysia<any, any>): void => {
       const output: CardData[] | Error = await stockService.cardListPosted();
       
       return output as CardData[] | Error
-    } catch (error) {
+    } catch (error: any) {
       return error
     }
   });

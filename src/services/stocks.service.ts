@@ -11,14 +11,12 @@ export default class StockService {
     public async cardListAll(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
-            const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(`MATCH (c:Card)
-                        WHERE NOT EXISTS((c)-[:LISTED]->(:User))
-                        RETURN c`)
+            const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+                tx.run(`MATCH (c:Card) WHERE c.lister IS NULL RETURN c`)
             );
             await session.close();
 
-            const cards: CardData[] = res.records.map(record => record.get("c").properties);
+            const cards: CardData[] = result.records.map(record => record.get("c").properties);
 
             return cards as CardData[];
         } catch (error: any) {
@@ -30,8 +28,7 @@ export default class StockService {
         try {
             const session: Session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(`MATCH (c:Card)-[:POSTED]->(u:User)
-                        RETURN c`)
+                tx.run(`MATCH (c:Card) WHERE c.lister IS NOT NULL RETURN c`)
             );
             await session.close();
 

@@ -104,3 +104,10 @@ export interface List {
     lister: string;
 
 }
+
+
+export interface CardListingContracts { 
+    marketplaceAddress: string;
+    cardAssetAddress: string;
+
+}

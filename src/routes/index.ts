@@ -1,8 +1,10 @@
-import Elysia from "elysia";// Replace "express" with your actual dependency if needed
+//** ELYSIA IMPORT 
+import Elysia from "elysia";
+
+//** ROUTE IMPORTS
 import stocks from "./stocks.routes";
 import auth from "./auth.routes";
 import contracts from "./contracts.routes";
-
 import list from "./list.routes";
 import mint from "./mint.routes";
 import user from "./player.routes";

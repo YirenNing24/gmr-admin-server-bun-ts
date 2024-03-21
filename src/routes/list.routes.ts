@@ -8,7 +8,7 @@ import { listCardSchema } from '../services/list.services/list.schema';
 
 
 const list = (app: Elysia): void => {
-    app.post('/admin/list-card', async ({ headers, body}): Promise<SuccessMessage | Error> => {
+    app.post('/admin/post-card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
         try {
             const authorizationHeader: string | undefined = headers.authorization;
             if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -21,7 +21,8 @@ const list = (app: Elysia): void => {
             const output: SuccessMessage | Error = await listService.listCard(body, jwtToken);
             return output;
         } catch (error: any) {
-          return error;
+          console.log(error)
+          throw error;
         }
       }, listCardSchema
     );

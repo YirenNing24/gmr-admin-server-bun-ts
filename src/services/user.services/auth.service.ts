@@ -29,8 +29,7 @@ export default class AuthService {
     public async register(userRegistrationData: UserRegistrationData, token: string): Promise<SuccessMessage> {
         try{
         const tokenService: TokenService = new TokenService();
-        const notificationServce: NotificationService = new NotificationService()
-
+        // const notificationServce: NotificationService = new NotificationService();
         const userName: string = await tokenService.verifyAccessToken(token)
 
         if (userName !== "kaetaro13") {
@@ -51,22 +50,18 @@ export default class AuthService {
           .insert(newUser)
           .run(connection);
 
-          const notification: Notification = {
-            username,
-            eventType: "registration",
-            eventDescription: `${username} has been registered`,
-            success: true,
-            errorMessage: "",
-            blockchainTransactionId: ""
-        }
+        //   const notification: Notification = {
+        //     username,
+        //     eventType: "registration",
+        //     eventDescription: `${username} has been registered`,
+        //     success: true,
+        //     errorMessage: "",
+        //     blockchainTransactionId: ""
+        // }
 
 
-        await notificationServce.insertNotification(notification)
-       
-
+        // await notificationServce.insertNotification(notification)
         return { success: "User successfully registered" }
-
-
         }
         catch(error: any) {
             throw error
@@ -77,7 +72,7 @@ export default class AuthService {
         try {
             
             const tokenService: TokenService = new TokenService();
-            const notificationServce: NotificationService = new NotificationService();
+            // const notificationServce: NotificationService = new NotificationService();
 
             const connection: rt.Connection = await getRethinkDB();
             const query: object | null = await rt.db('admin')
@@ -110,17 +105,17 @@ export default class AuthService {
                  accessToken,
             };
 
-            const notification: Notification = {
-                username,
-                eventType: "status",
-                eventDescription: `online`,
-                success: true,
-                errorMessage: "",
-                blockchainTransactionId: ""
-            }
+            // const notification: Notification = {
+            //     username,
+            //     eventType: "status",
+            //     eventDescription: `online`,
+            //     success: true,
+            //     errorMessage: "",
+            //     blockchainTransactionId: ""
+            // }
 
 
-            await notificationServce.insertNotification(notification)
+            // await notificationServce.insertNotification(notification)
             return safeProperties  as AuthenticationResponse
         } 
         catch (error: any) {

@@ -125,7 +125,7 @@ export default class MintService {
             });
             await session.close();
         } catch (error) {
-            console.log(error);
+
             throw error;
         }
     }
