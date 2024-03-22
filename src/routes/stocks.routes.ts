@@ -7,7 +7,7 @@ import { Driver } from "neo4j-driver";
 
 //** SERVICE IMPORT
 import StockService from "../services/stocks.service";
-import { CardData } from "../services/mint.services/mint.schema";
+import { CardData } from "../services/mint.services/mint.interface";
 
 const stocks = (app: Elysia<any, any>): void => {
   app.get('/admin/card/list/listed', async () => {
@@ -35,6 +35,18 @@ const stocks = (app: Elysia<any, any>): void => {
   });
 
   app.get('/admin/card-list-sold', async () => {
+    try {
+      const driver = getDriver() as Driver
+      const stockService = new StockService(driver);
+      const output: CardData[] | Error = await stockService.cardListSold();
+      
+      return output as CardData[] | Error
+    } catch (error: any) {
+      return error;
+    }
+  });
+
+  app.post('/admin/update/card-list', async () => {
     try {
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);

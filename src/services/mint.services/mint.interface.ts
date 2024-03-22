@@ -139,3 +139,51 @@ export interface SuccessMessage {
     success: string
 }
 
+/**
+ * Represents data for a card field.
+ * 
+ * @interface CardField
+ * @property {string} name - The name of the card field.
+ * @property {string} tokenId - The token ID of the card field.
+ * @property {string} quantityPerReward - The quantity per reward of the card field.
+ * @property {string} totalRewards - The total rewards of the card field.
+ * @property {string} assetContract - The asset contract of the card field.
+ */
+
+export interface CardData {
+    description: string;
+    era: string;
+    healboost: string;
+    artist: string; 
+    level: string;
+    name: string;
+    group: string;
+    position: string;   
+    position2: string;
+    rarity: string;
+    scoreboost: string;
+    slot: string;
+    awakenCount: string;
+    boostCount: string;
+    skill: string;
+    tier: string;
+    breakthrough: boolean;
+    stars: string;
+    experience: string
+    supply: number;
+    imageByte: string;
+    owner: string;
+    cardAddress: string;
+    id: string;
+    uploader: string;
+    uri: string;
+    tokenId: string
+    quantity: 1
+    quantityOwned: string
+    startTime?: string;
+    endTime?: string;
+    lister?: string;
+    sold?: boolean;
+    pricePerToken?: number
+    currencyName?: string
+  }

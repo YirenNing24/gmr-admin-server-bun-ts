@@ -109,5 +109,6 @@ export interface List {
 export interface CardListingContracts { 
     marketplaceAddress: string;
     cardAssetAddress: string;
+    beatsTokenAddress: string;
 
 }

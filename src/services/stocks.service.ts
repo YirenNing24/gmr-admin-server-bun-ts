@@ -1,5 +1,8 @@
-import { CardData } from "./mint.services/mint.schema";
+//**MEMGRAPH IMPORTS */
 import { Driver, QueryResult, Session, ManagedTransaction } from 'neo4j-driver-core';
+
+//** TYPE INTERFACE IMPORT
+import { CardData } from './mint.services/mint.interface';
 
 export default class StockService {
     private driver: Driver;
@@ -24,7 +27,7 @@ export default class StockService {
         }
     }
 
-    async cardListPosted(): Promise<CardData[] | Error> {
+    public async cardListPosted(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
@@ -40,7 +43,7 @@ export default class StockService {
         }
     }
 
-    async cardListSold(): Promise<CardData[] | Error> {
+    public async cardListSold(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
@@ -56,4 +59,8 @@ export default class StockService {
             return error;
         }
     }
+
+
+
+    
 }

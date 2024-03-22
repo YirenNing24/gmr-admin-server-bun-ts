@@ -55,7 +55,8 @@ class TokenService {
 
 			return userName as string;
 		} catch (error: any) {
-			throw error;
+		  console.log(error)
+		  throw error;
 		}
 	}
 
