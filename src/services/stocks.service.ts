@@ -37,9 +37,9 @@ export default class StockService {
 
             const cards: CardData[] = res.records.map(record => record.get("c").properties);
 
-            return cards;
+            return cards as CardData[]
         } catch (error: any) {
-            return error;
+          return error;
         }
     }
 
@@ -60,7 +60,4 @@ export default class StockService {
         }
     }
 
-
-
-    
 }

@@ -23,6 +23,6 @@ export const listCardSchema = {
         quantity: t.Number(),
         pricePerToken: t.Number(),
         startTime: t.String(),
-        endTime: t.String(),
+        endTime: t.String()
     })
 };

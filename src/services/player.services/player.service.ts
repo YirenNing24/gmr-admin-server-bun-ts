@@ -51,8 +51,6 @@ class PlayerService {
             const players: PlayerData[] = result.records.map(record => record.get('u').properties);
     
             // Log user properties
-            console.log(players);
-    
             return players;
     
         } catch (error: any) {

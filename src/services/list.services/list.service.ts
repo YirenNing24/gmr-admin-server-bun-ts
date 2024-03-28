@@ -1,6 +1,6 @@
 
 //** THIRDWEB IMPORTS
-import { DirectListingV3, MarketplaceV3, ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { DirectListingV3, MarketplaceV3, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
 
 //** MEMGRAPH IMPORTS
 import { Driver, QueryResult, Session } from 'neo4j-driver-core'
@@ -22,9 +22,10 @@ import StockService from "../stocks.service";
 
 //** ERROR VALIDATIOn IMPORT
 import ValidationError from "../../errors/validation.error";
+import { BigNumber } from "ethers";
 
 
-export default class ListService {
+class ListService {
 
 private driver: Driver;
 
@@ -55,15 +56,21 @@ constructor(driver: Driver) {
                 isReservedListing: false, pricePerToken, 
                 endTimestamp, startTimestamp, 
                 assetContractAddress: cardAssetAddress, 
-                currencyContractAddress: beatsTokenAddress }
+                currencyContractAddress: beatsTokenAddress };
+
+            console.log(listingData)
 
             // Create a listing on the marketplace
             const cardMarketplace: MarketplaceV3 = await sdk.getContract(marketplaceAddress, 'marketplace-v3')
-            await cardMarketplace.directListings.createListing(listingData);
-            await this.savetoMemgraph(lister, listing);
+            const transaction: TransactionResultWithId = await cardMarketplace.directListings.createListing(listingData);
+
+            const listingId: number = transaction.id.toNumber()
+
+            await this.savetoMemgraph(lister, listing, listingId);
 
           return { success: "Card listing is successful" } as SuccessMessage;
         } catch (error: any) {
+          console.log(error)
           throw error;
         }
     };
@@ -101,8 +108,6 @@ constructor(driver: Driver) {
         }
     };
     
-
-
     public async cancelListCard(token: string, listingId: string): Promise<SuccessMessage | Error>  {
         const tokenService: TokenService = new TokenService;
 
@@ -126,7 +131,7 @@ constructor(driver: Driver) {
     };
 
 
-    private async savetoMemgraph(lister: string | undefined, listingDataSave: ListingData): Promise<void> {
+    private async savetoMemgraph(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
         try {
             const { tokenId } = listingDataSave;
             const session: Session = this.driver.session();
@@ -134,8 +139,11 @@ constructor(driver: Driver) {
                 tx.run(
                     `MATCH (c:Card {id: $tokenId})
                      SET c += $listingDataSave
-                     SET c.lister = $lister`,
-                    { tokenId, lister, listingDataSave }
+                     SET c.lister = $lister
+                     SET c.listingId = $listingId
+                     SET c.sold = false`
+                     ,
+                    { tokenId, lister, listingDataSave, listingId }
                 )
             );
             await session.close();
@@ -175,4 +183,4 @@ constructor(driver: Driver) {
     
 }
 
-
+export default ListService

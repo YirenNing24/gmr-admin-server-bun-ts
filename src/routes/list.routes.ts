@@ -16,7 +16,7 @@ import { authorizationBearerSchema } from '../services/contract.services/contrac
 
 
 const list = (app: Elysia): void => {
-    app.post('/admin/post-card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
+    app.post('/admin/list-card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
         try {
             const authorizationHeader: string | undefined = headers.authorization;
             if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
