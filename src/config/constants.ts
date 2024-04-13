@@ -1,10 +1,11 @@
 // Import required modules
-import { config } from 'dotenv';
-import { Mumbai } from "@thirdweb-dev/chains";
+
+import { ArbitrumSepolia } from "@thirdweb-dev/chains";
+import { SmartWalletConfig } from '@thirdweb-dev/wallets';
 // import { ConnectionOptions } from 'rethinkdb';
 
 // Load config from .env file
-config();
+
 
 // API Configuration
 export const API_PREFIX: string = process.env.API_PREFIX || '/api';
@@ -41,30 +42,23 @@ export const SECRET_KEY: string | undefined = process.env.SECRET_KEY;
 export const PRIVATE_KEY: string  = process.env.THIRDWEB_AUTH_PRIVATE_KEY || ""
 
 // Chain and Wallet Factory Configuration
-export const CHAIN: typeof Mumbai = Mumbai;
-export const FACTORIES: Record<number, string> = { [Mumbai.chainId]: "0xB164886ED35942D2B4aCb042c1c41D4B5c0EABe1" };
+export const CHAIN: typeof ArbitrumSepolia = ArbitrumSepolia;
+export const FACTORIES: Record<number, string> = { [ArbitrumSepolia.chainId]: "0x514f1d6B8d22911eE84f97eDececE0479e38E1b6" };
 
 // Contract Addresses
-export const BEATS_TOKEN: string = '0x63F8Cb0ffc1DeB782E84B9C68b2F85260fbd497d';
-export const THUMP_TOKEN: string = '0xDAd44595262D2390192762bbb3358DF807808480';
-export const KMR_TOKEN: string = '0xb6446F25afD9f18B9716Aa32d65df9370980d6c7';
+export const BEATS_TOKEN: string = '0xAA95DA3D6EbdAb099630b6d4Cf0fcb904a44C2ab';
+export const GMR_TOKEN: string = '0x7dce27C81b7e112018FA6C2e27f8444b5D39688B';
 
+export const CARD_ADDRESS: string = '0x64252262370FeDD38d6E85c6d3229E77887A00E6'; 
+export const CARD_MARKETPLACE: string = '0xaa7f29eFc54ECE04dA4fe567666d90634e02F4c9'; 
 
-export const EDITION_ADDRESS: string = '0x09F143c0222505D7985482fCc7D3Abf7E3C987eA'; // ** NFT CARD ADDRESS
-export const CARD_MARKETPLACE: string = '0x7dc65A3EeBdFbCAC10C9f0a0ecaA62f98a8d1f00'; // ** CARD MARKETPLACE ADDRESS
-
-export const PACK_ADDRESS: string = '0x436B0468CF4d8dA8E887fA01F5F97d03C7A465e1';
-export const BUNDLE_MARKETPLACE: string = '0xcd5CB69Dcc7D52eAe5CD99Cc43F92F329507ED6E'; // ** LOOTBOX MARKETPLACE ADDRESS
+export const PACK_ADDRESS: string = '0xa9D89AF49694Dc7BaC3B8154cc3B78592AaaACe7';
+export const PACK_MARKETPLACE: string = '0x708562FEC05711B3fdf69D01c4CcbC0DfF2c15b0';
 
 const factoryAddress: string | undefined = FACTORIES[CHAIN.chainId];
-export const SMART_WALLET_CONFIG: {
-  chain: typeof CHAIN;
-  gasless: boolean;
-  factoryAddress: string | undefined;
-  secretKey: string | undefined;
-} = {
+export const SMART_WALLET_CONFIG: SmartWalletConfig = {
   chain: CHAIN,
+  factoryAddress,
   gasless: true,
-  factoryAddress: factoryAddress,
   secretKey: SECRET_KEY,
 };
