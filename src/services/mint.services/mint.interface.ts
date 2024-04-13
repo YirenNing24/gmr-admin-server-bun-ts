@@ -207,14 +207,14 @@ export interface CardData {
     owner: string;
     tokenId: string
     id: string;
-    listingId: number;
-
+    
     cardAddress: string;
     uploader: string;
 
     supply: string;
 
     quantity: 1
+    listingId?: number;
     quantityOwned: string
     startTime?: string;
     endTime?: string;

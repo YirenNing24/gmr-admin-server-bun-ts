@@ -3,7 +3,7 @@
 import { DirectListingV3, MarketplaceV3, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
 
 //** MEMGRAPH IMPORTS
-import { Driver, QueryResult, Session } from 'neo4j-driver-core'
+import { Driver, QueryResult, Session,  ManagedTransaction } from 'neo4j-driver-core'
 
 //** CONFIG IMPORTS
 import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants';
@@ -18,11 +18,10 @@ import { CardData, SuccessMessage } from "../mint.services/mint.interface";
 
 //** SERVICES IMORTS
 import TokenService from "../security.services/token.service";
-import StockService from "../stocks.service";
+import StockService from "../stocks.services/stocks.service";
 
 //** ERROR VALIDATIOn IMPORT
 import ValidationError from "../../errors/validation.error";
-import { BigNumber } from "ethers";
 
 
 class ListService {
@@ -35,45 +34,58 @@ constructor(driver: Driver) {
 }
     public async listCard(listing: ListingData, token: string): Promise<SuccessMessage | Error>  {
         const tokenService: TokenService = new TokenService;
+            try {
+                const lister: string = await tokenService.verifyAccessToken(token);
 
-        try {
-            const lister: string = await tokenService.verifyAccessToken(token);
- 
-            const contracts: CardListingContracts = await this.retrieveContracts(token);
-            const { cardAssetAddress, marketplaceAddress, beatsTokenAddress } = contracts as CardListingContracts
+                const contracts: CardListingContracts = await this.retrieveContracts(token);
+                const { cardAssetAddress, marketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts
 
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                secretKey: SECRET_KEY
-            });
+                const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
+                    secretKey: SECRET_KEY
+                });
 
-            const {  tokenId, quantity, pricePerToken, startTime, endTime} = listing as ListingData
+                const {  tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData
 
-            const startTimestamp: Date = new Date(startTime);
-            const endTimestamp: Date = new Date(endTime);
+                const startTimestamp: Date = new Date(startTime);
+                const endTimestamp: Date = new Date(endTime);
 
-            const listingData = { 
-                tokenId, quantity, 
-                isReservedListing: false, pricePerToken, 
-                endTimestamp, startTimestamp, 
-                assetContractAddress: cardAssetAddress, 
-                currencyContractAddress: beatsTokenAddress };
+                let currencyContractAddress: string;
+                if (currencyName === "$BEATS") {
+                    currencyContractAddress = beatsTokenAddress;
+                } else if (currencyName === "$GMR") {
+                    currencyContractAddress = gmrTokenAddress;
+                } else {
+                    throw new Error("Invalid currency name specified");
+                }
 
-            console.log(listingData)
+                const listingData = { 
+                    tokenId, 
+                    quantity, 
+                    isReservedListing: false, 
+                    pricePerToken, 
+                    endTimestamp, 
+                    startTimestamp, 
+                    assetContractAddress: cardAssetAddress, 
+                    currencyContractAddress
+                };
 
-            // Create a listing on the marketplace
-            const cardMarketplace: MarketplaceV3 = await sdk.getContract(marketplaceAddress, 'marketplace-v3')
-            const transaction: TransactionResultWithId = await cardMarketplace.directListings.createListing(listingData);
+                console.log(listingData)
 
-            const listingId: number = transaction.id.toNumber()
+                // Create a listing on the marketplace
+                const cardMarketplace: MarketplaceV3 = await sdk.getContract(marketplaceAddress, 'marketplace-v3')
+                const transaction: TransactionResultWithId = await cardMarketplace.directListings.createListing(listingData);
 
-            await this.savetoMemgraph(lister, listing, listingId);
+                const listingId: number = transaction.id.toNumber()
 
-          return { success: "Card listing is successful" } as SuccessMessage;
-        } catch (error: any) {
-          console.log(error)
-          throw error;
-        }
-    };
+                await this.savetoMemgraph(lister, listing, listingId);
+
+                return { success: "Card listing is successful" } as SuccessMessage;
+            } catch (error: any) {
+                console.log(error)
+                throw error;
+            }
+        };
+
 
     public async updateCardList(token: string, isCronJob: boolean = false) {
         const tokenService: TokenService = new TokenService();
@@ -106,7 +118,7 @@ constructor(driver: Driver) {
         } catch(error: any) {
             throw error;
         }
-    };
+        };
     
     public async cancelListCard(token: string, listingId: string): Promise<SuccessMessage | Error>  {
         const tokenService: TokenService = new TokenService;
@@ -128,14 +140,14 @@ constructor(driver: Driver) {
         } catch (error: any) {
           throw error;
         }
-    };
+        };
 
 
     private async savetoMemgraph(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
         try {
             const { tokenId } = listingDataSave;
             const session: Session = this.driver.session();
-            await session.executeWrite((tx) =>
+            await session.executeWrite((tx: ManagedTransaction) =>
                 tx.run(
                     `MATCH (c:Card {id: $tokenId})
                      SET c += $listingDataSave
@@ -150,23 +162,25 @@ constructor(driver: Driver) {
         } catch(error: any) {
             throw error;
         }
-    };
+        };
 
-    private async retrieveContracts(token: string): Promise<CardListingContracts> {
+    public async retrieveContracts(token: string): Promise<CardListingContracts> {
         const contractService: ContractService = new ContractService();
         const contracts: Error | Contracts[] = await contractService.getContracts(token);
 
         let marketplaceAddress: string | undefined;
         let cardAssetAddress: string | undefined;
         let beatsTokenAddress: string | undefined;
+        let gmrTokenAddress: string | undefined;
 
         if (Array.isArray(contracts)) {
             const [firstContract] = contracts;
             if (firstContract) {
-                const { cardMarketplaceAddress, cardAddress, beatsAddress } = firstContract as Contracts;
+                const { cardMarketplaceAddress, cardAddress, beatsAddress, gmrAddress } = firstContract as Contracts;
                 marketplaceAddress = cardMarketplaceAddress;
                 cardAssetAddress = cardAddress;
-                beatsTokenAddress = beatsAddress
+                beatsTokenAddress = beatsAddress;
+                gmrTokenAddress = gmrAddress;
             }
         };
 
@@ -175,12 +189,8 @@ constructor(driver: Driver) {
         };
 
         return { marketplaceAddress, cardAssetAddress, beatsTokenAddress } as CardListingContracts
-    };
+        };
 
-
-
-
-    
 }
 
 export default ListService

@@ -69,11 +69,8 @@ export default class AuthService {
     };
 
     public async authenticate(userName: string, unencryptedPassword: string): Promise<AuthenticationResponse | Error> {
+        const tokenService: TokenService = new TokenService();
         try {
-            
-            const tokenService: TokenService = new TokenService();
-            // const notificationServce: NotificationService = new NotificationService();
-
             const connection: rt.Connection = await getRethinkDB();
             const query: object | null = await rt.db('admin')
                 .table('users')

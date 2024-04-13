@@ -18,6 +18,7 @@ import ContractService from '../contract.services/contracts.service';
 import { Contracts } from '../contract.services/contracts.interface';
 import { CardBundleData, CardField, CreateCard, MetadataWithSupply, SuccessMessage } from './mint.interface';
 import { Buffer } from "buffer";
+import { MintedCardMetaData } from '../stocks.services/stocks.interface';
 
 export default class MintService {
 
@@ -33,10 +34,10 @@ export default class MintService {
         const username: string = await tokenService.verifyAccessToken(token);
         const access: string = await securityService.checkAccess(username);
         try {
-            if (access !== "0") {
-                return new ValidationError("Access Denied", "User does not have permission to update contracts");
+            if (access !== "0" && access !== "1") {
+                return new ValidationError("Access Denied", "User doest not have  permission to create cards");
             };
-
+            
             const editionAddress: string = await this.retrieveContracts(token)
             if (!editionAddress) {
                 throw new Error("Edition address is undefined");
@@ -69,19 +70,21 @@ export default class MintService {
             });
 
             await cardContract.erc1155.mintBatch(metadataWithSupply)
-            const stocks: NFT[] = await cardContract.erc1155.getOwned()
 
-            await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte)
+            //@ts-ignore
+            const stocks: MintedCardMetaData[] = await cardContract.erc1155.getOwned()
+
+            await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte);
 
 
-            return { success: "Card mint is successful" } as SuccessMessage
+            return { success: "Card mint is successful" } as SuccessMessage;
 
         } catch (error: any) {
           throw error
         }
     };
 
-    private async saveCardToMemgraph(stocks: NFT[], editionAddress: string, uploaderBeats: string, imageByte: string) {
+    private async saveCardToMemgraph(stocks: MintedCardMetaData[], editionAddress: string, uploaderBeats: string, imageByte: string) {
         try {
             const session: Session = this.driver.session();
             await session.executeWrite(async (tx: ManagedTransaction) => {
@@ -259,7 +262,7 @@ export default class MintService {
         }
     };
 
-    private async retrieveContracts(token: string): Promise<string> {
+    public async retrieveContracts(token: string): Promise<string> {
         const contractService: ContractService = new ContractService();
         const contracts: Error | Contracts[] = await contractService.getContracts(token);
 

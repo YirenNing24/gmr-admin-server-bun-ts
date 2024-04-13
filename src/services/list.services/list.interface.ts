@@ -17,20 +17,6 @@ export interface Listing {
     metadata: ListingMetadata;
 }
 
-// export interface ListingData {
-//     currencyName: string;
-//     assetContractAddress: string;
-//     tokenId: string;
-//     quantity: number;
-//     currencyContractAddress: string;
-//     pricePerToken: number;
-//     startDate: Date;
-//     endDate: Date;
-//     id?: string
-//     lister?: string
-//     isReservedListing?: boolean;
-// }
-
 export interface ListingData {
     currencyName: string;
     tokenId: string;
@@ -39,7 +25,6 @@ export interface ListingData {
     startTime: string;
     endTime: string;
 }
-
 
 export interface ListingDataSave {
     currencyName: string;
@@ -53,10 +38,7 @@ export interface ListingDataSave {
     isReservedListing: boolean;
     lister?: string
     id?: string
-
-
 }
-
 
 export interface Metadata {
     boostCount: string;
@@ -110,5 +92,6 @@ export interface CardListingContracts {
     marketplaceAddress: string;
     cardAssetAddress: string;
     beatsTokenAddress: string;
+    gmrTokenAddress: string;
 
 }
