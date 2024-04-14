@@ -29,7 +29,7 @@ const auth = (app: Elysia): void => {
       }, adminLoginSchema
     );
 
-    app.post('/admin/renew/access', async ({ headers }): Promise<TokenScheme> => {
+    app.post('/api/renew/access', async ({ headers }): Promise<TokenScheme> => {
       try {
         const authorizationHeader: string = headers.authorization;
         if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
