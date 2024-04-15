@@ -24,7 +24,7 @@ const nft = (app: Elysia): void => {
             const driver: Driver = getDriver() as Driver
             const nftService: NFTService = new NFTService(driver);
             
-            const output: SuccessMessage | Error = await nftService.transferCard(jwtToken, body)
+            const output: SuccessMessage | Error = await nftService.transferCards(jwtToken, body)
 
             return output as SuccessMessage | Error;
         } catch (error: any) {

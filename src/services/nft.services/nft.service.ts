@@ -25,7 +25,7 @@ class NFTService {
         this.driver = driver;
     }
 
-    public async transferCard(token: string, cardTransferDetails: CardTransferDetails): Promise < SuccessMessage | Error > {
+    public async transferCards(token: string, cardTransferDetails: CardTransferDetails): Promise < SuccessMessage | Error > {
         const tokenService: TokenService = new TokenService();
         const securityService: SecurityService = new SecurityService();
 
