@@ -59,9 +59,9 @@ export default class MintService {
                 sdk.getContract(editionAddress, 'edition'),
             ]);
 
-            const supply: number = createCardData.supply
-            const metadataWithSupply: MetadataWithSupply[] = Array(supply).fill({
-                supply,
+            const supplyAmount: number = createCardData.supply
+            const metadataWithSupply: MetadataWithSupply[] = Array(supplyAmount).fill({
+                supply: 1,
                 metadata: { 
                     ...createCardData, 
                     image: imageURI,

@@ -29,7 +29,10 @@ export default class StockService {
         try {
             const session: Session = this.driver.session();
             const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(`MATCH (c:Card) WHERE c.lister IS NULL RETURN c`)
+                tx.run(`MATCH (c:Card) 
+                        WHERE c.lister is NULL 
+                        AND c.transferred is NULL 
+                        RETURN c`)
             );
             await session.close();
 

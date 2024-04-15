@@ -45,7 +45,7 @@ class NFTService {
                 secretKey: SECRET_KEY,
             });
 
-            const [cardContract] = await Promise.all([ sdk.getContract(editionAddress, 'edition')]);
+            const [ cardContract ] = await Promise.all([ sdk.getContract(editionAddress, 'edition')]);
 
             const { toAddress, tokenIds, amounts } = cardTransferDetails as CardTransferDetails
             await cardContract.transferBatch(toAddress, tokenIds, amounts)
