@@ -17,8 +17,8 @@ import { t } from "elysia";
 export const cardTransferSchema = {
     headers: t.Object({ authorization: t.String() }),
     body: t.Object({
-        amount: t.Array(t.Number()),
-        address: t.String(),
-        tokenId: t.Array(t.String())
+        amounts: t.Array(t.Number()),
+        toAddress: t.String(),
+        tokenIds: t.Array(t.String())
     })
 };

@@ -7,7 +7,7 @@
  * @property {string[]} tokenId - The token ID(s) of the cards to transfer.
  */
 export interface CardTransferDetails {
-    amount: number[];
-    address: string;
-    tokenId: string[];
+    amounts: number[];
+    toAddress: string;
+    tokenIds: string[];
 }

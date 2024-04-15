@@ -47,8 +47,8 @@ class NFTService {
 
             const [cardContract] = await Promise.all([ sdk.getContract(editionAddress, 'edition')]);
 
-            const { address, tokenId, amount } = cardTransferDetails as CardTransferDetails
-            await cardContract.transferBatch(address, tokenId, amount)
+            const { toAddress, tokenIds, amounts } = cardTransferDetails as CardTransferDetails
+            await cardContract.transferBatch(toAddress, tokenIds, amounts)
 
             return { success: "Card Transfer is successful" } as SuccessMessage;
         } catch (error: any) {
