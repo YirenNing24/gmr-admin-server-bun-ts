@@ -4,7 +4,7 @@ import { Driver, Session, ManagedTransaction } from 'neo4j-driver-core'
 //** THIRDWEB IMPORTS */
 import { Edition, NFT, Pack, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
-import { SECRET_KEY, PRIVATE_KEY } from '../../config/constants';
+import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants';
 
 //** VALIDATION ERROR IMPORT
 import ValidationError from '../../errors/validation.error';
@@ -47,7 +47,7 @@ export default class MintService {
                 secretKey: SECRET_KEY,
             });
 
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, "mumbai", {
+            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
                 secretKey: SECRET_KEY,
             });
 
@@ -80,6 +80,7 @@ export default class MintService {
             return { success: "Card mint is successful" } as SuccessMessage;
 
         } catch (error: any) {
+            console.error(error)
           throw error
         }
     };
@@ -140,7 +141,7 @@ export default class MintService {
                 secretKey: SECRET_KEY,
             });
 
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, "mumbai", {
+            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
                 secretKey: SECRET_KEY
             });
 

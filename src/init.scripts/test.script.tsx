@@ -1,13 +1,13 @@
 //** THIRDWEB IMPORTS */
 import { Edition, NFT, Pack, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
-import { SECRET_KEY, PRIVATE_KEY } from "../config/constants";
+import { SECRET_KEY, PRIVATE_KEY, CHAIN } from "../config/constants";
 
 
 
 
 const getContents = async () => {
-    const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, "mumbai", {
+    const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
         secretKey: SECRET_KEY,
     });
 

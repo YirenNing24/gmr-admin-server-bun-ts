@@ -9,7 +9,7 @@ import { CardData } from '../mint.services/mint.interface';
 import { CardListingContracts } from '../list.services/list.interface';
 
 //** CONFIGS IMPORT
-import { PRIVATE_KEY, SECRET_KEY } from '../../config/constants';
+import { CHAIN, PRIVATE_KEY, SECRET_KEY } from '../../config/constants';
 
 //** SERVice IMPORT
 import ListService from '../list.services/list.service';
@@ -86,7 +86,7 @@ export default class StockService {
             await authenticateService.authenticate(username, password);
 
             const contracts: CardListingContracts = await listService.retrieveContracts(token);
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, "mumbai", {
+            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
                 secretKey: SECRET_KEY,
             });
             const marketplaceContract: MarketplaceV3 =  await sdk.getContract(contracts.marketplaceAddress, 'marketplace-v3');

@@ -8,7 +8,12 @@ import contracts from "./contracts.routes";
 import list from "./list.routes";
 import mint from "./mint.routes";
 import user from "./player.routes";
+import nft from "./nft.routes";
+
 import notifications from "./websocket.routes";
+
+
+
 
 const routes = (app: Elysia): void => {
     app.use(auth)
@@ -17,6 +22,7 @@ const routes = (app: Elysia): void => {
     app.use(contracts)
     app.use(list)
     app.use(user)
+    app.use(nft)
     // app.use(notifications)
 };
 

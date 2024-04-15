@@ -118,7 +118,7 @@ export interface CardBundleData {
 
 /**
  * Represents data for a card field.
- * 
+ *
  * @interface CardField
  * @property {string} name - The name of the card field.
  * @property {string} tokenId - The token ID of the card field.
@@ -133,6 +133,7 @@ export interface CardField {
     totalRewards: string;
     assetContract: string;
 }
+
 
 
 export interface SuccessMessage {
