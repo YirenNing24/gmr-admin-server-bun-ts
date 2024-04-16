@@ -65,8 +65,7 @@ export default class MintService {
                 metadata: { 
                     ...createCardData, 
                     image: imageURI,
-                    uploader: "beats",
-                    skillEquipped: false
+                    uploader: "beats"
                 }
             });
 
@@ -105,7 +104,8 @@ export default class MintService {
                         supply,
                         type,
                         uploaderBeats,
-                        imageByte
+                        imageByte,
+                        skillEquipped: false
                     };
     
                     await tx.run(
