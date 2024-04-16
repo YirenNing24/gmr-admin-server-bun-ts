@@ -19,6 +19,7 @@ export const cardTransferSchema = {
     body: t.Object({
         amounts: t.Array(t.Number()),
         toAddress: t.String(),
-        tokenIds: t.Array(t.String())
+        tokenIds: t.Array(t.String()),
+        uris: t.Array(t.String())
     })
 };

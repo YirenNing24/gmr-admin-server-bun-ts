@@ -47,8 +47,9 @@ class NFTService {
 
             const [ cardContract ] = await Promise.all([ sdk.getContract(editionAddress, 'edition')]);
 
-            const { toAddress, tokenIds, amounts } = cardTransferDetails as CardTransferDetails
-            await cardContract.transferBatch(toAddress, tokenIds, amounts)
+            const { toAddress, tokenIds, amounts, uris } = cardTransferDetails as CardTransferDetails
+            await cardContract.transferBatch(toAddress, tokenIds, amounts);
+            await this.addTransferredProp(uris, username);
 
             return { success: "Card Transfer is successful" } as SuccessMessage;
         } catch (error: any) {
@@ -76,6 +77,24 @@ class NFTService {
 
         return editionAddress
     };
+
+    private async addTransferredProp(uris: string[], username: string) {
+        try {
+            const session: Session = this.driver.session();
+            await session.executeWrite(async (tx: ManagedTransaction) => {
+                for (const uri of uris) {
+                    await tx.run(`
+                        MATCH (c:Card {uri: $uri})
+                        SET c.transferred = $username
+                    `, { uri, username });
+                }
+            });
+            await session.close();
+        } catch (error: any) {
+            console.error(error)
+            throw error
+        }
+    }
 
 
     

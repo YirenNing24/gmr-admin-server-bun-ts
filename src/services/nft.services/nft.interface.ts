@@ -10,4 +10,5 @@ export interface CardTransferDetails {
     amounts: number[];
     toAddress: string;
     tokenIds: string[];
+    uris: string[];
 }
