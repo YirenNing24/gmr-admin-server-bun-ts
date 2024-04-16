@@ -50,7 +50,7 @@ class NFTService {
             const { toAddress, tokenIds, amounts, uris } = cardTransferDetails as CardTransferDetails
 
             await cardContract.transferBatch(toAddress, tokenIds, amounts);
-            await this.addTransferredProp(uris, username);
+            await this.addTransferredProp(uris, username, toAddress);
 
             return { success: "Card Transfer is successful" } as SuccessMessage;
         } catch (error: any) {
@@ -79,15 +79,17 @@ class NFTService {
         return editionAddress
     };
 
-    private async addTransferredProp(uris: string[], username: string) {
+    private async addTransferredProp(uris: string[], username: string, walletAddress: string) {
         try {
             const session: Session = this.driver.session();
             await session.executeWrite(async (tx: ManagedTransaction) => {
                 for (const uri of uris) {
                     await tx.run(`
+                        MATCH (u:User {smartWalletAddress: $walletAddress})
                         MATCH (c:Card {uri: $uri})
+                        MERGE (u)-[:OWNED]->(c)
                         SET c.transferred = $username
-                    `, { uri, username });
+                    `, { walletAddress, uri, username });
                 }
             });
             await session.close();
@@ -96,30 +98,7 @@ class NFTService {
             throw error
         }
     }
-
-    private async getUsername(walletAddress: string) {
-        try {
-            const session: Session = this.driver.session();
-            await session.executeWrite(async (tx: ManagedTransaction) => {
-                for (const uri of uris) {
-                    await tx.run(`
-                        MATCH (c:Card {uri: $uri})
-                        SET c.transferred = $username
-                    `, { uri, username });
-                }
-            });
-            await session.close();
-        } catch (error: any) {
-            console.error(error)
-            throw error
-        }
-    }
-
-
     
-
-
-
 }
 
 export default NFTService
