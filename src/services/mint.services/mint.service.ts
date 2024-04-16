@@ -65,7 +65,8 @@ export default class MintService {
                 metadata: { 
                     ...createCardData, 
                     image: imageURI,
-                    uploader: "beats"
+                    uploader: "beats",
+                    skillEquipped: false
                 }
             });
 
@@ -76,9 +77,7 @@ export default class MintService {
 
             await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte);
 
-
             return { success: "Card mint is successful" } as SuccessMessage;
-
         } catch (error: any) {
             console.error(error)
           throw error

@@ -88,6 +88,7 @@ interface Metadata {
     artist: string;
     slot: string;
     level: string;
+    skillEquipped: boolean
     awakenCount: string;
     boostCount: string;
     position: string;
