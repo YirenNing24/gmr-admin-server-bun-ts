@@ -25,7 +25,7 @@ import { Notification } from "../notification.services/notification.interface";
 import { SuccessMessage } from "../mint.services/mint.interface";
 
 
-export default class AuthService {
+class AuthService {
     public async register(userRegistrationData: UserRegistrationData, token: string): Promise<SuccessMessage> {
         try{
         const tokenService: TokenService = new TokenService();
@@ -120,3 +120,5 @@ export default class AuthService {
         }
     };
 }
+
+export default AuthService
