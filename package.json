@@ -29,6 +29,7 @@
     "nanoid": "^5.0.4",
     "neo4j-driver": "^5.16.0",
     "rethinkdb": "^2.4.2",
-    "scrypt-js": "^3.0.1"
+    "scrypt-js": "^3.0.1",
+    "thirdweb": "^5.9.0"
   }
 }

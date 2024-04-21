@@ -16,7 +16,7 @@ import { authorizationBearerSchema } from '../services/contract.services/contrac
 
 
 const list = (app: Elysia): void => {
-    app.post('/admin/card/list-card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
+    app.post('/admin/list/card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
         try {
             const authorizationHeader: string | undefined = headers.authorization;
             if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -42,7 +42,6 @@ const list = (app: Elysia): void => {
           if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
               throw new Error('Bearer token not found in Authorization header');
           }
-
           
           const jwtToken: string = authorizationHeader.substring(7);
           const driver: Driver = getDriver() as Driver;
@@ -50,7 +49,6 @@ const list = (app: Elysia): void => {
           
           const output: SuccessMessage | Error = await listService.removeListing(jwtToken);
 
-          
           return output as SuccessMessage | Error;
       } catch (error: any) {
         console.log(error)
