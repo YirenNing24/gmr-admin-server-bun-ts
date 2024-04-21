@@ -22,6 +22,7 @@ import StockService from "../stocks.services/stocks.service";
 
 //** ERROR VALIDATIOn IMPORT
 import ValidationError from "../../errors/validation.error";
+import { removeListingCypher } from "./list.cypher";
 
 
 class ListService {
@@ -77,7 +78,7 @@ constructor(driver: Driver) {
 
                 const listingId: number = transaction.id.toNumber()
 
-                await this.savetoMemgraph(lister, listing, listingId);
+                await this.saveListToDB(lister, listing, listingId);
 
                 return { success: "Card listing is successful" } as SuccessMessage;
             } catch (error: any) {
@@ -87,7 +88,7 @@ constructor(driver: Driver) {
         };
 
 
-    public async updateCardList(token: string, isCronJob: boolean = false) {
+    public async removeListing(token: string, isCronJob: boolean = false) {
         const tokenService: TokenService = new TokenService();
         const stockService: StockService = new StockService(this.driver);
         try {
@@ -102,10 +103,7 @@ constructor(driver: Driver) {
                 if (card.endTime) {
                     const endTimeDate: Date = new Date(card.endTime);
                     if (endTimeDate <= new Date()) {
-                        await session.run(
-                            `MATCH (c:Card {uri: $uri})
-                             WHERE c.sold IS NULL
-                             REMOVE c.lister`,
+                        await session.run( removeListingCypher,
                             { uri: card.uri }
                         );
                     }
@@ -143,17 +141,17 @@ constructor(driver: Driver) {
         };
 
 
-    private async savetoMemgraph(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
+    private async saveListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
         try {
             const { tokenId } = listingDataSave;
             const session: Session = this.driver.session();
             await session.executeWrite((tx: ManagedTransaction) =>
                 tx.run(
                     `MATCH (c:Card {id: $tokenId})
+                     CREATE (c)-[:LISTED]->(cs)
                      SET c += $listingDataSave
                      SET c.lister = $lister
-                     SET c.listingId = $listingId
-                     SET c.sold = false`
+                     SET c.listingId = $listingId`
                      ,
                     { tokenId, lister, listingDataSave, listingId }
                 )

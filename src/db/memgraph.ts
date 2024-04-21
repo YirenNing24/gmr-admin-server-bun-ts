@@ -42,6 +42,7 @@ export async function closeDriver(): Promise<void> {
 //** INIT */
 
 //** CREATE CARD STORE NODE  */
+//** CONSTRAINT ONLY ONE CARD STORE NODE */
 
 //** CARD ID CONSTRAINT */
 //** CARD ID CONSTRAINT */
