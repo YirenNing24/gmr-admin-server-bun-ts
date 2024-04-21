@@ -36,3 +36,13 @@ export async function closeDriver(): Promise<void> {
     await driver.close();
   }
 }
+
+
+
+//** INIT */
+
+//** CREATE CARD STORE NODE  */
+
+//** CARD ID CONSTRAINT */
+//** CARD ID CONSTRAINT */
+
