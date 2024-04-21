@@ -25,7 +25,7 @@ export default class StockService {
         this.driver = driver;
     }
 
-    public async cardListAll(): Promise<CardData[] | Error> {
+    public async cardStockAll(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
             const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
@@ -44,7 +44,7 @@ export default class StockService {
         }
     }
 
-    public async cardListPosted(): Promise<CardData[] | Error> {
+    public async cardListed(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
