@@ -47,7 +47,7 @@ const stocks = (app: Elysia<any, any>): void => {
     }
   });
 
-  app.post('/admin/update/populate-card-list', async ({ headers, body }): Promise<SuccessMessage> => {
+  app.post('/admin/card/populate-card-list', async ({ headers, body }): Promise<SuccessMessage> => {
     try {
       const authorizationHeader: string = headers.authorization;
       if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
