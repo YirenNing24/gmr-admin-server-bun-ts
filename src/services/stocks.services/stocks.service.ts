@@ -2,7 +2,7 @@
 import { Driver, QueryResult, Session, ManagedTransaction } from 'neo4j-driver-core';
 
 //** THIRDWEB SDK IMPORT
-import { DirectListingV3, Edition, MarketplaceV3, NFT, ThirdwebSDK } from '@thirdweb-dev/sdk';
+import { Edition, MarketplaceV3, ThirdwebSDK } from '@thirdweb-dev/sdk';
 
 //** TYPE INTERFACE IMPORT
 import { CardData } from '../mint.services/mint.interface';
@@ -11,11 +11,14 @@ import { CardListingContracts } from '../list.services/list.interface';
 //** CONFIGS IMPORT
 import { CHAIN, PRIVATE_KEY, SECRET_KEY } from '../../config/constants';
 
-//** SERVice IMPORT
+//** SERVICE IMPORT
 import ListService from '../list.services/list.service';
-import { AllCardsListed, CardsListedValid, MintedCardMetaData } from './stocks.interface';
+import { CardsListedValid, MintedCardMetaData } from './stocks.interface';
 import AuthService from '../user.services/auth.service';
 import TokenService from '../security.services/token.service';
+
+//** CYPHER IMPORT
+import { cardListedCypher, cardSoldCypher, cardStockAllCypher, saveCardListedCypher, saveCardValidCypher, saveCardValidCypherMerge } from './stock.cypher';
 
 
 export default class StockService {
@@ -25,14 +28,11 @@ export default class StockService {
         this.driver = driver;
     }
 
-    public async cardStockAll(): Promise<CardData[] | Error> {
+    public async cardStock(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
             const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(`MATCH (c:Card) 
-                        WHERE c.lister is NULL 
-                        AND c.transferred is NULL 
-                        RETURN c`)
+                tx.run(cardStockAllCypher)
             );
             await session.close();
 
@@ -48,8 +48,9 @@ export default class StockService {
         try {
             const session: Session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(`MATCH (c:Card) WHERE c.lister IS NOT NULL RETURN c`)
+                tx.run(cardListedCypher)
             );
+
             await session.close();
 
             const cards: CardData[] = res.records.map(record => record.get("c").properties);
@@ -60,12 +61,11 @@ export default class StockService {
         }
     }
 
-    public async cardListSold(): Promise<CardData[] | Error> {
+    public async cardSold(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(`MATCH (c:Card)-[:SOLD]->(u:User)
-                        RETURN c`)
+                tx.run(cardSoldCypher)
             );
             await session.close();
 
@@ -113,7 +113,6 @@ export default class StockService {
                     }
                 }
             }
-
 
             // Process matches and save card data
             for (let i = 0; i < cardsValid.length; i++) {
@@ -195,22 +194,12 @@ export default class StockService {
             const session: Session = this.driver.session();
             await session.executeWrite(async (tx: ManagedTransaction) => {
 
-                await tx.run(
-                    `MATCH (c:Card {id: $tokenId})
-                    SET c += $parameters
-                    SET c += $listingData
-                    SET c.lister = $lister
-                    SET c.listingId = $listingId
-                    SET c.sold = false`, 
+                await tx.run(saveCardValidCypher, 
                     { tokenId: card.tokenId, parameters, listingData, listingId: card.id, lister: card.asset.uploader }
                 );
 
-                await tx.run(
-                    `
-                    MATCH (p:Card {id: $id})
-                    MATCH (u:User {username: $uploader})
-                    MERGE (p)-[:UPLOADED]->(u)
-                    `, { id: card.tokenId, uploader: "beats" }
+                await tx.run(saveCardValidCypherMerge, 
+                    { id: card.tokenId, uploader: "beats" }
                 );
             }
         );
@@ -234,9 +223,7 @@ export default class StockService {
             };
 
             await session.executeWrite((tx: ManagedTransaction) => {
-                tx.run(
-                    `MERGE (c:Card {id: $id})
-                    ON CREATE SET c += $parameters, c.sold = false`, 
+                tx.run(saveCardListedCypher, 
                     { id: card.metadata.id, parameters }
                 );
     

@@ -15,7 +15,7 @@ const stocks = (app: Elysia<any, any>): void => {
     try {
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);
-      const output: CardData[] | Error = await stockService.cardStockAll();
+      const output: CardData[] | Error = await stockService.cardStock();
 
       return output as CardData[] | Error
     } catch (error: any) {
@@ -39,31 +39,7 @@ const stocks = (app: Elysia<any, any>): void => {
     try {
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
-      const output: CardData[] | Error = await stockService.cardListSold();
-      
-      return output as CardData[] | Error
-    } catch (error: any) {
-      return error;
-    }
-  });
-
-  app.post('/admin/update/card-list', async () => {
-    try {
-      const driver = getDriver() as Driver
-      const stockService = new StockService(driver);
-      const output: CardData[] | Error = await stockService.cardListSold();
-      
-      return output as CardData[] | Error
-    } catch (error: any) {
-      return error;
-    }
-  });
-
-  app.post('/admin/update/card-list', async () => {
-    try {
-      const driver = getDriver() as Driver
-      const stockService = new StockService(driver);
-      const output: CardData[] | Error = await stockService.cardListSold();
+      const output: CardData[] | Error = await stockService.cardSold();
       
       return output as CardData[] | Error
     } catch (error: any) {
