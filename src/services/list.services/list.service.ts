@@ -22,7 +22,9 @@ import StockService from "../stocks.services/stocks.service";
 
 //** ERROR VALIDATIOn IMPORT
 import ValidationError from "../../errors/validation.error";
-import { removeListingCypher } from "./list.cypher";
+
+//** CYPHER IMPORT */
+import { removeListingCypher, saveListToDBSchema } from "./list.cypher";
 
 
 class ListService {
@@ -69,8 +71,6 @@ constructor(driver: Driver) {
                     assetContractAddress: cardAssetAddress, 
                     currencyContractAddress
                 };
-
-                console.log(listingData)
 
                 // Create a listing on the marketplace
                 const cardMarketplace: MarketplaceV3 = await sdk.getContract(marketplaceAddress, 'marketplace-v3')
@@ -133,6 +133,7 @@ constructor(driver: Driver) {
 
             const cardMarketplace: MarketplaceV3 = await sdk.getContract(marketplaceAddress, 'marketplace-v3')
             await cardMarketplace.directListings.cancelListing(listingId);
+            await this.removeListing(token, false)
 
           return { success: "Card listing cancellation is successful" } as SuccessMessage;
         } catch (error: any) {
@@ -146,12 +147,8 @@ constructor(driver: Driver) {
             const { tokenId } = listingDataSave;
             const session: Session = this.driver.session();
             await session.executeWrite((tx: ManagedTransaction) =>
-                tx.run(
-                    `MATCH (c:Card {id: $tokenId})
-                     CREATE (c)-[:LISTED]->(cs)
-                     SET c += $listingDataSave
-                     SET c.lister = $lister
-                     SET c.listingId = $listingId`
+                tx.run(saveListToDBSchema
+
                      ,
                     { tokenId, lister, listingDataSave, listingId }
                 )
@@ -169,7 +166,6 @@ constructor(driver: Driver) {
         let marketplaceAddress: string | undefined;
         let cardAssetAddress: string | undefined;
         let beatsTokenAddress: string | undefined;
-        let gmrTokenAddress: string | undefined;
 
         if (Array.isArray(contracts)) {
             const [firstContract] = contracts;
@@ -178,7 +174,6 @@ constructor(driver: Driver) {
                 marketplaceAddress = cardMarketplaceAddress;
                 cardAssetAddress = cardAddress;
                 beatsTokenAddress = beatsAddress;
-                gmrTokenAddress = gmrAddress;
             }
         };
 
