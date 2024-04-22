@@ -220,7 +220,6 @@ export interface CardData {
     startTime?: string;
     endTime?: string;
     lister?: string;
-    sold?: boolean;
     pricePerToken?: number
     currencyName?: string
   }

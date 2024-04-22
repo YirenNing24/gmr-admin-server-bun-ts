@@ -47,5 +47,5 @@ export const saveCardValidCypherMerge: string = `
 
 export const saveCardListedCypher: string = `
     MERGE (c:Card {id: $id})
-    ON CREATE SET c += $parameters, c.sold = false`
+    ON CREATE SET c += $parameters`
 

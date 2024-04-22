@@ -7,7 +7,7 @@
  */
 export const removeListingCypher: string = `
     MATCH (c:Card {uri: $uri})-[l:LISTED]->(cs:CardStore)
-    WHERE c.sold IS NULL
+    WHERE NOT EXISTS( (c)-[:SOLD]-(cs) )
     DELETE l;`;
 
 /**
