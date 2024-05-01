@@ -224,12 +224,11 @@ export interface CardData {
     currencyName?: string
   }
 
-
-
 export interface UpgradeItemData {
     type: "general";
     tier: number;
     quantity: number;
     minted: boolean;
     experience: number
+    uri?: string
 }
