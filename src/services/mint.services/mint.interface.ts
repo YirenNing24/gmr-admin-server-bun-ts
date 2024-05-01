@@ -226,7 +226,7 @@ export interface CardData {
 
 export interface UpgradeItemData {
     type: "general";
-    tier: number;
+    tier: string;
     quantity: number;
     minted: boolean;
     experience: number

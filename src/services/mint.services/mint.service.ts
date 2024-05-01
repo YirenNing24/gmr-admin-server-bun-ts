@@ -16,7 +16,7 @@ import ContractService from '../contract.services/contracts.service';
 
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
-import { CardBundleData, CardField, CreateCard, MetadataWithSupply, SuccessMessage } from './mint.interface';
+import { CardBundleData, CardField, CreateCard, MetadataWithSupply, SuccessMessage, UpgradeItemData } from './mint.interface';
 import { Buffer } from "buffer";
 import { MintedCardMetaData } from '../stocks.services/stocks.interface';
 
