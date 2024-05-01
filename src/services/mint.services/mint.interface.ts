@@ -224,11 +224,34 @@ export interface CardData {
     currencyName?: string
   }
 
+/**
+ * Represents data for an upgrade item.
+ * @interface UpgradeItemData
+ * @property {string} type - The type of the upgrade item. Currently only supports "general".
+ * @property {string} tier - The tier of the upgrade item.
+ * @property {number} quantity - The quantity of the upgrade item.
+ * @property {boolean} minted - Indicates whether the item has been minted.
+ * @property {number} experience - The experience points provided by the upgrade item.
+ * @property {string} [uri] - The URI of the upgrade item.
+ * @property {string} imageByte - The image byte data of the upgrade item.
+ */
 export interface UpgradeItemData {
     type: "general";
     tier: string;
     quantity: number;
     minted: boolean;
-    experience: number
-    uri?: string
+    experience: number;
+    uri?: string;
+    imageByte: string;
+    id: string;
+}
+
+
+export interface MintedUpgradeItemMetadata {
+    quantityOwned?: string
+    owner: string;
+    metadata: UpgradeItemData;
+    type: string;
+    supply: string;
+
 }

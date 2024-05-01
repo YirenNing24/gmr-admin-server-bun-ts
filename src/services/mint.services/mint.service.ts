@@ -16,7 +16,7 @@ import ContractService from '../contract.services/contracts.service';
 
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
-import { CardBundleData, CardField, CreateCard, MetadataWithSupply, SuccessMessage, UpgradeItemData } from './mint.interface';
+import { CardBundleData, CardField, CreateCard, MetadataWithSupply, MintedUpgradeItemMetadata, SuccessMessage, UpgradeItemData } from './mint.interface';
 import { Buffer } from "buffer";
 import { MintedCardMetaData } from '../stocks.services/stocks.interface';
 
@@ -283,10 +283,108 @@ export default class MintService {
     };
 
 
-    public async createUpgradeItem(upgradeItemData: UpgradeItemData) {
+    public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData) {
+        const tokenService: TokenService = new TokenService();
+        const securityService: SecurityService = new SecurityService();
+        const username: string = await tokenService.verifyAccessToken(token);
+        const access: string = await securityService.checkAccess(username);
+        try {
+            if (access !== "0" && access !== "1") {
+                return new ValidationError("Access Denied", "User doest not have  permission to create cards");
+            };
+
+            const editionAddress: string = await this.retrieveContracts(token)
+            if (!editionAddress) {
+                throw new Error("Edition address is undefined");
+            };
+
+            const storage: ThirdwebStorage = new ThirdwebStorage({
+                secretKey: SECRET_KEY,
+            });
+
+            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
+                secretKey: SECRET_KEY,
+            });
+
+
+            const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
+            const buffer: Buffer = Buffer.from(byteImage);
+            const [imageURI, cardContract] = await Promise.all([
+                storage.upload(buffer),
+                sdk.getContract(editionAddress, "edition"),
+            ]);
+
+            const {imageByte, quantity, ...itemData } = upgradeItemData
+            const metadataWithSupply: MetadataWithSupply[] = Array(1).fill({
+                supply: quantity,
+                metadata: { 
+                    ...itemData, 
+                    image: imageURI,
+                    uploader: "beats"
+                }
+            });
+
+            await cardContract.erc1155.mintBatch(metadataWithSupply);
+
+            //@ts-ignore
+            const stocks: MintedUpgradeItemMetadata[] = await cardContract.erc1155.getOwned();
         
+    } catch(error: any) {
+
     }
 
 
 
+    }
+
+
+    private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,) {
+        try {
+            const session: Session = this.driver.session();
+            await session.executeWrite(async (tx: ManagedTransaction) => {
+                for (const upgradeItem of stocks) {
+                    const {
+                        metadata,
+                        owner,
+                        quantityOwned,
+                        supply,
+                        type
+                    } = upgradeItem;
+    
+                    const parameters = {
+                        ...metadata,
+                        editionAddress,
+                        owner,
+                        quantityOwned,
+                        supply,
+                        type,
+                        uploaderBeats,
+                        skillEquipped: false
+                    };
+    
+                    await tx.run(
+                        `
+                        MERGE (c:CardUpgrade {id: $id})
+                        ON CREATE SET
+                            c += $parameters
+                        RETURN c
+                        `, { id: metadata.id, parameters }
+                    );
+    
+                    await tx.run(
+                        `
+                        MATCH (p:Card {id: $id})
+                        MATCH (u:User {username: $uploader})
+                        MERGE (p)-[:UPLOADED]->(u)
+                        `, { id: metadata.id, uploader: owner }
+                    );
+                }
+            });
+            await session.close();
+        } catch (error) {
+
+            throw error;
+        }
+
+    }
 }
