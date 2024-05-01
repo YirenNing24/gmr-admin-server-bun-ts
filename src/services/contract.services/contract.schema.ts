@@ -22,6 +22,7 @@ export const updateContractSchema = {
         cardMarketplaceAddress: t.String(),
         bundleAddress: t.String(),
         bundleMarketplaceAddress: t.String(),
+        cardItemUpgradeAddress: t.String()
      })
 };
 

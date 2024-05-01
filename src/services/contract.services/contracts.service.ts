@@ -27,6 +27,9 @@ class ContractService {
     
             const connection: rt.Connection = await getRethinkDB();
             const updatedContracts = { ...contracts, lastUpdate: Date.now(), updatedBy: username };
+
+
+            console.log(updatedContracts)
     
             await rt.db('admin')
                 .table('contracts')

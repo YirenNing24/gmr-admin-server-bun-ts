@@ -38,7 +38,9 @@ export default class MintService {
                 return new ValidationError("Access Denied", "User doest not have  permission to create cards");
             };
             
-            const editionAddress: string = await this.retrieveContracts(token)
+            const contractAddress = await this.retrieveContracts(token)
+            const { editionAddress } = contractAddress
+
             if (!editionAddress) {
                 throw new Error("Edition address is undefined");
             };
@@ -262,16 +264,18 @@ export default class MintService {
         }
     };
 
-    public async retrieveContracts(token: string): Promise<string> {
+    public async retrieveContracts(token: string): Promise<{editionAddress: string | undefined, cardItemUpgrade: string | undefined}> {
         const contractService: ContractService = new ContractService();
         const contracts: Error | Contracts[] = await contractService.getContracts(token);
 
-        let editionAddress: string | undefined; // Initialize to undefined
+        let editionAddress: string | undefined; 
+        let cardItemUpgrade: string | undefined;// Initialize to undefined
         if (Array.isArray(contracts)) {
             const [firstContract] = contracts;
             if (firstContract) {
-                const { cardAddress } = firstContract;
+                const { cardAddress, cardItemUpgradeAddress } = firstContract;
                 editionAddress = cardAddress;
+                cardItemUpgrade = cardItemUpgradeAddress;
             }
         }
 
@@ -279,9 +283,8 @@ export default class MintService {
             throw new Error("Edition address is undefined");
         }
 
-        return editionAddress
+        return { editionAddress, cardItemUpgrade }
     };
-
 
     public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData) {
         const tokenService: TokenService = new TokenService();
@@ -293,8 +296,12 @@ export default class MintService {
                 return new ValidationError("Access Denied", "User doest not have  permission to create cards");
             };
 
-            const editionAddress: string = await this.retrieveContracts(token)
-            if (!editionAddress) {
+            const contractAddress = await this.retrieveContracts(token);
+
+            const { cardItemUpgrade } = contractAddress
+
+
+            if (!cardItemUpgrade) {
                 throw new Error("Edition address is undefined");
             };
 
@@ -311,7 +318,7 @@ export default class MintService {
             const buffer: Buffer = Buffer.from(byteImage);
             const [imageURI, cardContract] = await Promise.all([
                 storage.upload(buffer),
-                sdk.getContract(editionAddress, "edition"),
+                sdk.getContract(cardItemUpgrade, "edition"),
             ]);
 
             const {imageByte, quantity, ...itemData } = upgradeItemData
@@ -328,7 +335,7 @@ export default class MintService {
 
             //@ts-ignore
             const stocks: MintedUpgradeItemMetadata[] = await cardContract.erc1155.getOwned();
-            await this.saveUpgradeItemToMemgraph(stocks, editionAddress, username)
+            await this.saveUpgradeItemToMemgraph(stocks, cardItemUpgrade, username)
         
         } catch(error: any) {
             throw error

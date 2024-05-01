@@ -8,6 +8,7 @@
  * @property {string} cardMarketplaceAddress - The address of the Card Marketplace contract.
  * @property {string} bundleAddress - The address of the Bundle contract.
  * @property {string} bundleMarketplaceAddress - The address of the Bundle Marketplace contract.
+ * @property {string} cardItemUpgradeAddress - The address of the Card Item Upgrade contract.
  */
 export interface Contracts {
     beatsAddress: string;
@@ -16,4 +17,5 @@ export interface Contracts {
     cardMarketplaceAddress: string;
     bundleAddress: string;
     bundleMarketplaceAddress: string;
+    cardItemUpgradeAddress: string;
 }
