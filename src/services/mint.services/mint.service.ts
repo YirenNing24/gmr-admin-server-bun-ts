@@ -25,7 +25,7 @@ export default class MintService {
     private driver: Driver;
     constructor(driver: Driver) {
         this.driver = driver;
-    }
+    };
 
     public async createCard(token: string, createCardData: CreateCard): Promise < SuccessMessage | Error > {
         const tokenService: TokenService = new TokenService();
@@ -131,7 +131,7 @@ export default class MintService {
 
             throw error;
         }
-    }
+    };
     
 
     public async createCardBox(cardBoxData: CardBundleData, base64Image: string, cardFields: CardField[], uploader: string, packAddress: string): Promise < void | Error > {
@@ -328,14 +328,16 @@ export default class MintService {
 
             //@ts-ignore
             const stocks: MintedUpgradeItemMetadata[] = await cardContract.erc1155.getOwned();
+            await this.saveUpgradeItemToMemgraph(stocks, editionAddress, username)
         
-    } catch(error: any) {
+        } catch(error: any) {
+            throw error
 
-    }
+        }
 
 
 
-    }
+    };
 
 
     private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,) {
@@ -343,13 +345,7 @@ export default class MintService {
             const session: Session = this.driver.session();
             await session.executeWrite(async (tx: ManagedTransaction) => {
                 for (const upgradeItem of stocks) {
-                    const {
-                        metadata,
-                        owner,
-                        quantityOwned,
-                        supply,
-                        type
-                    } = upgradeItem;
+                    const { metadata, owner, quantityOwned, supply, type } = upgradeItem as MintedUpgradeItemMetadata
     
                     const parameters = {
                         ...metadata,
@@ -381,10 +377,9 @@ export default class MintService {
                 }
             });
             await session.close();
-        } catch (error) {
-
+        } catch (error: any) {
             throw error;
         }
 
-    }
+    };
 }
