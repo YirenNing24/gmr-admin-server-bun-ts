@@ -283,4 +283,10 @@ export default class MintService {
     };
 
 
+    public async createUpgradeItem(upgradeItemData: UpgradeItemData) {
+        
+    }
+
+
+
 }
