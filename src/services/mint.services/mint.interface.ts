@@ -254,5 +254,4 @@ export interface MintedUpgradeItemMetadata {
     metadata: UpgradeItemData;
     type: string;
     supply: string;
-
 }

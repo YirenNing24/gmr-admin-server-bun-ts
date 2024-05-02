@@ -41,6 +41,8 @@ const mint = (app: Elysia ) => {
           return output
 
       } catch(error: any) {
+        console.log(error)
+        throw error
 
       }
     }, createUpgradeItemSchema

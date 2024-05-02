@@ -288,14 +288,8 @@ export default class MintService {
 
     public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData) {
         const tokenService: TokenService = new TokenService();
-        const securityService: SecurityService = new SecurityService();
         const username: string = await tokenService.verifyAccessToken(token);
-        const access: string = await securityService.checkAccess(username);
         try {
-            if (access !== "0" && access !== "1") {
-                return new ValidationError("Access Denied", "User doest not have  permission to create cards");
-            };
-
             const contractAddress = await this.retrieveContracts(token)
             const { cardItemUpgrade } = contractAddress
             if (!cardItemUpgrade) {
@@ -330,12 +324,12 @@ export default class MintService {
             await cardUpgradeContract.erc1155.mintBatch(metadataWithSupply);
 
             //@ts-ignore
-            const stocks: MintedUpgradeItemMetadata[] = await cardContract.erc1155.getOwned();
+            const stocks: MintedUpgradeItemMetadata[] = await cardUpgradeContract.erc1155.getOwned();
             await this.saveUpgradeItemToMemgraph(stocks, cardItemUpgrade, username);
 
             return { success: "Card item upgrade has been created"} as SuccessMessage
-        
         } catch(error: any) {
+            console.log(error)
             throw error
 
         }
@@ -383,6 +377,7 @@ export default class MintService {
             });
             await session.close();
         } catch (error: any) {
+            console.log(error)
             throw error;
         }
 
