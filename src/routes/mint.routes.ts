@@ -37,7 +37,8 @@ const mint = (app: Elysia ) => {
 
           const driver: Driver = getDriver() as Driver;
           const mintService: MintService = new MintService(driver);
-          const output = mintService.createUpgradeItem(jwtToken, body)
+          const output = mintService.createUpgradeItem(jwtToken, body);
+          return output
 
       } catch(error: any) {
 

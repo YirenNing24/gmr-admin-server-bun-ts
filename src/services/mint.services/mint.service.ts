@@ -331,7 +331,9 @@ export default class MintService {
 
             //@ts-ignore
             const stocks: MintedUpgradeItemMetadata[] = await cardContract.erc1155.getOwned();
-            await this.saveUpgradeItemToMemgraph(stocks, cardItemUpgrade, username)
+            await this.saveUpgradeItemToMemgraph(stocks, cardItemUpgrade, username);
+
+            return { success: "Card item upgrade has been created"} as SuccessMessage
         
         } catch(error: any) {
             throw error
