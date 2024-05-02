@@ -49,3 +49,11 @@ export const saveCardListedCypher: string = `
     MERGE (c:Card {id: $id})
     ON CREATE SET c += $parameters`
 
+/**
+ * Cypher query to retrieve all cards in stock that are not listed and not transferred.
+ */
+export const cardUpgradeItemAllCypher: string = `
+    MATCH (c:CardUpgrade) 
+    WHERE NOT EXISTS((c)-[:LISTED]->())
+    AND c.transferred IS NULL 
+    RETURN c`;

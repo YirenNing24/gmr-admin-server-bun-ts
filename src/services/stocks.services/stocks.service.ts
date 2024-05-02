@@ -5,7 +5,7 @@ import { Driver, QueryResult, Session, ManagedTransaction } from 'neo4j-driver-c
 import { Edition, MarketplaceV3, ThirdwebSDK } from '@thirdweb-dev/sdk';
 
 //** TYPE INTERFACE IMPORT
-import { CardData } from '../mint.services/mint.interface';
+import { CardData, UpgradeItemData } from '../mint.services/mint.interface';
 import { CardListingContracts } from '../list.services/list.interface';
 
 //** CONFIGS IMPORT
@@ -18,7 +18,7 @@ import AuthService from '../user.services/auth.service';
 import TokenService from '../security.services/token.service';
 
 //** CYPHER IMPORT
-import { cardListedCypher, cardSoldCypher, cardStockAllCypher, saveCardListedCypher, saveCardValidCypher, saveCardValidCypherMerge } from './stock.cypher';
+import { cardListedCypher, cardSoldCypher, cardStockAllCypher, cardUpgradeItemAllCypher, saveCardListedCypher, saveCardValidCypher, saveCardValidCypherMerge } from './stock.cypher';
 
 
 export default class StockService {
@@ -233,4 +233,23 @@ export default class StockService {
             throw error;
         }
     }
+
+
+
+    public async cardUpgradeItemStock(): Promise<UpgradeItemData[]> {
+        try {
+            const session: Session = this.driver.session();
+            const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+                tx.run(cardUpgradeItemAllCypher)
+            );
+            await session.close();
+
+            const cardUpgradeItem: UpgradeItemData[] = result.records.map(record => record.get("c").properties);
+
+            return cardUpgradeItem as UpgradeItemData[];
+        } catch (error: any) {
+            return error;
+        }      
+    }
+
 }    

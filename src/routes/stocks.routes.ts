@@ -7,7 +7,7 @@ import { Driver } from "neo4j-driver";
 
 //** SERVICE IMPORT
 import StockService from "../services/stocks.services/stocks.service";
-import { CardData, SuccessMessage } from "../services/mint.services/mint.interface";
+import { CardData, SuccessMessage, UpgradeItemData } from "../services/mint.services/mint.interface";
 import { populateCardListSchema } from "../services/stocks.services/stock.schema";
 
 const stocks = (app: Elysia<any, any>): void => {
@@ -66,6 +66,22 @@ const stocks = (app: Elysia<any, any>): void => {
     }
     }, populateCardListSchema
   );
+
+  app.get('/admin/upgrade/card-level', async (): Promise<UpgradeItemData[]> => {
+    try {
+      const driver = getDriver() as Driver
+      const stockService = new StockService(driver);
+      const output: UpgradeItemData[] = await stockService.cardUpgradeItemStock();
+      return output as UpgradeItemData[]
+    } catch (error: any) {
+      return error;
+    }
+  });
+
+
+
+
+
 };
 
 export default stocks;
