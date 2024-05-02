@@ -312,7 +312,7 @@ export default class MintService {
 
             const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
-            const [imageURI, cardContract] = await Promise.all([
+            const [imageURI, cardUpgradeContract] = await Promise.all([
                 storage.upload(buffer),
                 sdk.getContract(cardItemUpgrade, "edition"),
             ]);
@@ -327,7 +327,7 @@ export default class MintService {
                 }
             });
 
-            await cardContract.erc1155.mintBatch(metadataWithSupply);
+            await cardUpgradeContract.erc1155.mintBatch(metadataWithSupply);
 
             //@ts-ignore
             const stocks: MintedUpgradeItemMetadata[] = await cardContract.erc1155.getOwned();
