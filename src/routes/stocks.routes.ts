@@ -77,11 +77,6 @@ const stocks = (app: Elysia<any, any>): void => {
       return error;
     }
   });
-
-
-
-
-
 };
 
 export default stocks;
