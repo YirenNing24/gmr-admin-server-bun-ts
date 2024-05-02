@@ -329,13 +329,10 @@ export default class MintService {
 
             return { success: "Card item upgrade has been created"} as SuccessMessage
         } catch(error: any) {
-            console.log(error)
-            throw error
+            console.log(error);
+            throw error;
 
         }
-
-
-
     };
 
 
