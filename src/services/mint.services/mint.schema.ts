@@ -52,4 +52,28 @@ export const createCardSchema = {
 };
 
 
+/**
+ * Schema for creating an upgrade item.
+ * @constant {Object} createUpgradeItemSchema
+ * @property {Object} headers - The headers object containing authorization.
+ * @property {string} headers.authorization - The authorization token.
+ * @property {Object} body - The body object containing item details.
+ * @property {string} body.type - The type of the upgrade item.
+ * @property {string} body.tier - The tier of the upgrade item.
+ * @property {string} body.quantity - The quantity of the upgrade item.
+ * @property {number} body.experience - The experience points provided by the upgrade item.
+ * @property {boolean} body.minted - Indicates whether the item has been minted.
+ */
+export const createUpgradeItemSchema ={
+    headers: t.Object({ authorization: t.String() }),
+    body: t.Object({ 
+        type: t.String(),
+        tier: t.String(),
+        quantity: t.Number(),
+        experience: t.Number(),
+        minted: t.Boolean(),
+        imageByte: t.String(),
+  
+    })
 
+}

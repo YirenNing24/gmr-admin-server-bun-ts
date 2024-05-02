@@ -296,11 +296,8 @@ export default class MintService {
                 return new ValidationError("Access Denied", "User doest not have  permission to create cards");
             };
 
-            const contractAddress = await this.retrieveContracts(token);
-
+            const contractAddress = await this.retrieveContracts(token)
             const { cardItemUpgrade } = contractAddress
-
-
             if (!cardItemUpgrade) {
                 throw new Error("Edition address is undefined");
             };
@@ -312,7 +309,6 @@ export default class MintService {
             const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
                 secretKey: SECRET_KEY,
             });
-
 
             const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
             const buffer: Buffer = Buffer.from(byteImage);

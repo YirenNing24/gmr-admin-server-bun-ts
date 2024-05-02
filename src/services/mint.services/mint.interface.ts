@@ -234,16 +234,17 @@ export interface CardData {
  * @property {number} experience - The experience points provided by the upgrade item.
  * @property {string} [uri] - The URI of the upgrade item.
  * @property {string} imageByte - The image byte data of the upgrade item.
+ * @properry {string} 
  */
 export interface UpgradeItemData {
-    type: "general";
+    type: string;
     tier: string;
     quantity: number;
     minted: boolean;
     experience: number;
     uri?: string;
     imageByte: string;
-    id: string;
+    id?: string;
 }
 
 

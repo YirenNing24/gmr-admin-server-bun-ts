@@ -2,7 +2,7 @@ import Elysia from 'elysia';
 import { getDriver } from '../db/memgraph'
 import MintService from "../services/mint.services/mint.service";
 import { Driver } from 'neo4j-driver';
-import { createCardSchema } from '../services/mint.services/mint.schema';
+import { createCardSchema, createUpgradeItemSchema } from '../services/mint.services/mint.schema';
 import { SuccessMessage } from '../services/mint.services/mint.interface';
 
 
@@ -25,6 +25,25 @@ const mint = (app: Elysia ) => {
         }
         }, createCardSchema
     );
+
+
+    app.post('/admin/create-upgrade-item', async ({ headers, body }) => {
+      try {
+          const authorizationHeader: string = headers.authorization;
+          if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+              throw new Error('Bearer token not found in Authorization header');
+          }
+          const jwtToken: string = authorizationHeader.substring(7);
+
+          const driver: Driver = getDriver() as Driver;
+          const mintService: MintService = new MintService(driver);
+          const output = mintService.createUpgradeItem(jwtToken, body)
+
+      } catch(error: any) {
+
+      }
+    }, createUpgradeItemSchema
+  );
 
     // app.post('/admin/create-card-box', async (context) => {
     //     try {
