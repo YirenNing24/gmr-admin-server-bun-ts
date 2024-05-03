@@ -126,12 +126,50 @@ constructor(driver: Driver) {
                 const lister: string = await tokenService.verifyAccessToken(token);
 
                 const contracts: CardListingContracts = await this.retrieveContracts(token);
-                const { beatsTokenAddress, gmrTokenAddress, cardUpgradeItemMarketplaceAddress } = contracts as CardListingContracts
+                const { beatsTokenAddress, gmrTokenAddress, cardUpgradeItemMarketplaceAddress, cardUpgradeItemAddress } = contracts as CardListingContracts;
 
+                const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
+                    secretKey: SECRET_KEY
+                });
+
+                const { tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = upgradeItemListing as ListingData
+
+                const startTimestamp: Date = new Date(startTime);
+                const endTimestamp: Date = new Date(endTime);
+
+                let currencyContractAddress: string;
+                if (currencyName === "$BEATS") {
+                    currencyContractAddress = beatsTokenAddress;
+                } else if (currencyName === "$GMR") {
+                    currencyContractAddress = gmrTokenAddress;
+                } else {
+                    throw new Error("Invalid currency name specified");
+                }
+
+                const listingData = { 
+                    tokenId, 
+                    quantity, 
+                    isReservedListing: false, 
+                    pricePerToken, 
+                    endTimestamp, 
+                    startTimestamp, 
+                    assetContractAddress: cardUpgradeItemAddress, 
+                    currencyContractAddress
+                };
+
+                // Create a listing on the marketplace
+                const cardMarketplace: MarketplaceV3 = await sdk.getContract(cardUpgradeItemMarketplaceAddress, 'marketplace-v3')
+                const transaction: TransactionResultWithId = await cardMarketplace.directListings.createListing(listingData);
+
+                const listingId: number = transaction.id.toNumber()
+
+                await this.saveListToDB(lister, upgradeItemListing, listingId);
+
+                return { success: "Card listing is successful" } as SuccessMessage;             
             } catch(error: any) {
-
+                console.log(error)
+                throw error;
             }
-
         }
 
     public async cancelListCard(token: string, listingId: string): Promise<SuccessMessage | Error>  {
@@ -182,16 +220,17 @@ constructor(driver: Driver) {
         let cardAssetAddress: string | undefined;
         let beatsTokenAddress: string | undefined;
         let cardUpgradeItemMarketplaceAddress : string | undefined;
+        let cardUpgradeItemAddress: string | undefined;
 
         if (Array.isArray(contracts)) {
             const [firstContract] = contracts;
             if (firstContract) {
-                const { cardMarketplaceAddress, cardAddress, beatsAddress, gmrAddress, cardMarketplaceUpgradeItemAddress } = firstContract as Contracts;
+                const { cardMarketplaceAddress, cardAddress, beatsAddress, gmrAddress, cardMarketplaceUpgradeItemAddress, cardItemUpgradeAddress } = firstContract as Contracts;
                 marketplaceAddress = cardMarketplaceAddress;
                 cardAssetAddress = cardAddress;
                 beatsTokenAddress = beatsAddress;
-                cardUpgradeItemMarketplaceAddress = cardMarketplaceUpgradeItemAddress
-
+                cardUpgradeItemMarketplaceAddress = cardMarketplaceUpgradeItemAddress;
+                cardUpgradeItemAddress = cardItemUpgradeAddress
             }
         };
 
@@ -199,7 +238,7 @@ constructor(driver: Driver) {
             throw new Error("Edition address is undefined");
         };
 
-        return { marketplaceAddress, cardAssetAddress, beatsTokenAddress, cardUpgradeItemMarketplaceAddress } as CardListingContracts
+        return { marketplaceAddress, cardAssetAddress, beatsTokenAddress, cardUpgradeItemAddress, cardUpgradeItemMarketplaceAddress } as CardListingContracts
         };
 
 }
