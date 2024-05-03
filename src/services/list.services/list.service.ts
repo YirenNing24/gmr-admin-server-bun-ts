@@ -120,13 +120,13 @@ constructor(driver: Driver) {
 
 
 
-    public async listCardUpgradeItem(upgradeItemListing: any, token: string) {
+    public async listCardUpgradeItem(upgradeItemListing: ListingData, token: string) {
         const tokenService: TokenService = new TokenService;
             try {
                 const lister: string = await tokenService.verifyAccessToken(token);
 
                 const contracts: CardListingContracts = await this.retrieveContracts(token);
-                const { cardAssetAddress, marketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts
+                const { beatsTokenAddress, gmrTokenAddress, cardUpgradeItemMarketplaceAddress } = contracts as CardListingContracts
 
             } catch(error: any) {
 
@@ -134,11 +134,6 @@ constructor(driver: Driver) {
 
         }
 
-
-
-
-
-    
     public async cancelListCard(token: string, listingId: string): Promise<SuccessMessage | Error>  {
         const tokenService: TokenService = new TokenService;
 
@@ -186,14 +181,17 @@ constructor(driver: Driver) {
         let marketplaceAddress: string | undefined;
         let cardAssetAddress: string | undefined;
         let beatsTokenAddress: string | undefined;
+        let cardUpgradeItemMarketplaceAddress : string | undefined;
 
         if (Array.isArray(contracts)) {
             const [firstContract] = contracts;
             if (firstContract) {
-                const { cardMarketplaceAddress, cardAddress, beatsAddress, gmrAddress } = firstContract as Contracts;
+                const { cardMarketplaceAddress, cardAddress, beatsAddress, gmrAddress, cardMarketplaceUpgradeItemAddress } = firstContract as Contracts;
                 marketplaceAddress = cardMarketplaceAddress;
                 cardAssetAddress = cardAddress;
                 beatsTokenAddress = beatsAddress;
+                cardUpgradeItemMarketplaceAddress = cardMarketplaceUpgradeItemAddress
+
             }
         };
 
@@ -201,7 +199,7 @@ constructor(driver: Driver) {
             throw new Error("Edition address is undefined");
         };
 
-        return { marketplaceAddress, cardAssetAddress, beatsTokenAddress } as CardListingContracts
+        return { marketplaceAddress, cardAssetAddress, beatsTokenAddress, cardUpgradeItemMarketplaceAddress } as CardListingContracts
         };
 
 }

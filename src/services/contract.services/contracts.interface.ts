@@ -18,4 +18,5 @@ export interface Contracts {
     bundleAddress: string;
     bundleMarketplaceAddress: string;
     cardItemUpgradeAddress: string;
+    cardMarketplaceUpgradeItemAddress: string;
 }
