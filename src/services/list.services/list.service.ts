@@ -47,7 +47,7 @@ constructor(driver: Driver) {
                     secretKey: SECRET_KEY
                 });
 
-                const {  tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData
+                const { tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData
 
                 const startTimestamp: Date = new Date(startTime);
                 const endTimestamp: Date = new Date(endTime);
@@ -117,6 +117,27 @@ constructor(driver: Driver) {
             throw error;
         }
         };
+
+
+
+    public async listCardUpgradeItem(upgradeItemListing: any, token: string) {
+        const tokenService: TokenService = new TokenService;
+            try {
+                const lister: string = await tokenService.verifyAccessToken(token);
+
+                const contracts: CardListingContracts = await this.retrieveContracts(token);
+                const { cardAssetAddress, marketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts
+
+            } catch(error: any) {
+
+            }
+
+        }
+
+
+
+
+
     
     public async cancelListCard(token: string, listingId: string): Promise<SuccessMessage | Error>  {
         const tokenService: TokenService = new TokenService;
@@ -140,7 +161,6 @@ constructor(driver: Driver) {
           throw error;
         }
         };
-
 
     private async saveListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
         try {

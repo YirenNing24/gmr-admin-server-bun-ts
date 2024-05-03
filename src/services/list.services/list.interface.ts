@@ -87,11 +87,19 @@ export interface List {
 
 }
 
-
+// beatsAddress: t.String(),
+// gmrAddress: t.String(), 
+// cardAddress: t.String(),
+// cardMarketplaceAddress: t.String(),
+// bundleAddress: t.String(),
+// bundleMarketplaceAddress: t.String(),
+// cardItemUpgradeAddress: t.String(),
+// cardMarketplaceUpgradeItemAddress: t.String()
 export interface CardListingContracts { 
     marketplaceAddress: string;
     cardAssetAddress: string;
     beatsTokenAddress: string;
     gmrTokenAddress: string;
+    cardMarketplaceUpgradeItemAddress: string
 
 }
