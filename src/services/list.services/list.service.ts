@@ -24,7 +24,7 @@ import StockService from "../stocks.services/stocks.service";
 import ValidationError from "../../errors/validation.error";
 
 //** CYPHER IMPORT */
-import { removeListingCypher, saveListToDBSchema } from "./list.cypher";
+import { removeListingCypher, saveCardUpgradeToDBCypher, saveListToDBCypher } from "./list.cypher";
 
 
 class ListService {
@@ -78,7 +78,7 @@ constructor(driver: Driver) {
 
                 const listingId: number = transaction.id.toNumber()
 
-                await this.saveListToDB(lister, listing, listingId);
+                await this.saveCardListToDB(lister, listing, listingId);
 
                 return { success: "Card listing is successful" } as SuccessMessage;
             } catch (error: any) {
@@ -163,7 +163,7 @@ constructor(driver: Driver) {
 
                 const listingId: number = transaction.id.toNumber()
 
-                await this.saveListToDB(lister, upgradeItemListing, listingId);
+                await this.saveCardUpgradeListToDB(lister, upgradeItemListing, listingId);
 
                 return { success: "Card listing is successful" } as SuccessMessage;             
             } catch(error: any) {
@@ -195,14 +195,12 @@ constructor(driver: Driver) {
         }
         };
 
-    private async saveListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
+    private async saveCardListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
         try {
             const { tokenId } = listingDataSave;
             const session: Session = this.driver.session();
             await session.executeWrite((tx: ManagedTransaction) =>
-                tx.run(saveListToDBSchema
-
-                     ,
+                tx.run(saveListToDBCypher,
                     { tokenId, lister, listingDataSave, listingId }
                 )
             );
@@ -211,6 +209,23 @@ constructor(driver: Driver) {
             throw error;
         }
         };
+
+
+
+    private async saveCardUpgradeListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
+        try {
+            const { tokenId } = listingDataSave;
+            const session: Session = this.driver.session();
+            await session.executeWrite((tx: ManagedTransaction) =>
+                tx.run(saveCardUpgradeToDBCypher,
+                    { tokenId, lister, listingDataSave, listingId }
+                )
+            );
+            await session.close();
+        } catch(error: any) {
+            throw error;
+        }
+    };
 
     public async retrieveContracts(token: string): Promise<CardListingContracts> {
         const contractService: ContractService = new ContractService();

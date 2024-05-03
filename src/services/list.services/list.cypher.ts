@@ -20,9 +20,19 @@ export const removeListingCypher: string = `
  * @param {string} listingId - The ID of the listing.
  * @returns {string} The Cypher query.
  */
-export const saveListToDBSchema: string = `
+export const saveListToDBCypher: string = `
     MATCH (c:Card {id: $tokenId})
     MATCH (cs:CardStore)
+    CREATE (c)-[:LISTED]->(cs)
+    SET c += $listingDataSave
+    SET c.lister = $lister
+    SET c.listingId = $listingId`;
+
+
+
+export const saveCardUpgradeToDBCypher: string = `
+    MATCH (c:CardUpgrade {id: $tokenId})
+    MATCH (cs:CardUpgradeStore)
     CREATE (c)-[:LISTED]->(cs)
     SET c += $listingDataSave
     SET c.lister = $lister
