@@ -27,7 +27,7 @@ const mint = (app: Elysia ) => {
     );
 
 
-    app.post('/admin/create-upgrade-item', async ({ headers, body }) => {
+    app.post('/admin/create-upgrade-item', async ({ headers, body }): Promise<SuccessMessage> => {
       try {
           const authorizationHeader: string = headers.authorization;
           if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -37,13 +37,11 @@ const mint = (app: Elysia ) => {
 
           const driver: Driver = getDriver() as Driver;
           const mintService: MintService = new MintService(driver);
-          const output = mintService.createUpgradeItem(jwtToken, body);
-          return output
+          const output: SuccessMessage = await mintService.createUpgradeItem(jwtToken, body);
+          return output as SuccessMessage
 
       } catch(error: any) {
-        console.log(error)
         throw error
-
       }
     }, createUpgradeItemSchema
   );

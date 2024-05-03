@@ -247,7 +247,15 @@ export interface UpgradeItemData {
     id?: string;
 }
 
-
+/**
+ * Represents metadata for a minted upgrade item.
+ * @interface MintedUpgradeItemMetadata
+ * @property {string} [quantityOwned] - The quantity of the upgrade item owned by the owner (optional).
+ * @property {string} owner - The owner of the upgrade item.
+ * @property {UpgradeItemData} metadata - The metadata of the upgrade item.
+ * @property {string} type - The type of the upgrade item.
+ * @property {string} supply - The supply of the upgrade item.
+ */
 export interface MintedUpgradeItemMetadata {
     quantityOwned?: string
     owner: string;
