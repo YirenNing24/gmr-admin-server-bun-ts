@@ -240,8 +240,8 @@ export interface UpgradeItemData {
     type: string;
     tier: string;
     quantity: number;
-    minted: boolean;
     experience: number;
+    minted: boolean;
     uri?: string;
     imageByte: string;
     id?: string;
