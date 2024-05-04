@@ -71,8 +71,9 @@ const stocks = (app: Elysia<any, any>): void => {
   app.get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
     try {
       const driver = getDriver() as Driver
-      const stockService = new StockService(driver);
+      const stockService: StockService = new StockService(driver);
       const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock();
+      
       return output as StoreCardUpgradeData[]
     } catch (error: any) {
       return error;
