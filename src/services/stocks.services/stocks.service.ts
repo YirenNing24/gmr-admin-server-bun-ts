@@ -13,7 +13,7 @@ import { CHAIN, PRIVATE_KEY, SECRET_KEY } from '../../config/constants';
 
 //** SERVICE IMPORT
 import ListService from '../list.services/list.service';
-import { CardsListedValid, MintedCardMetaData } from './stocks.interface';
+import { CardsListedValid, MintedCardMetaData, StoreCardUpgradeData } from './stocks.interface';
 import AuthService from '../user.services/auth.service';
 import TokenService from '../security.services/token.service';
 
@@ -235,8 +235,7 @@ export default class StockService {
     }
 
 
-
-    public async cardUpgradeItemStock(): Promise<UpgradeItemData[]> {
+    public async cardUpgradeItemStock(): Promise<StoreCardUpgradeData[]> {
         try {
             const session: Session = this.driver.session();
             const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
@@ -244,12 +243,14 @@ export default class StockService {
             );
             await session.close();
 
-            const cardUpgradeItem: UpgradeItemData[] = result.records.map(record => record.get("c").properties);
+            const cardUpgradeItem: StoreCardUpgradeData[] = result.records.map(record => record.get("c").properties);
 
-            return cardUpgradeItem as UpgradeItemData[];
+            return cardUpgradeItem as StoreCardUpgradeData[];
         } catch (error: any) {
             return error;
         }      
     }
+
+    
 
 }    

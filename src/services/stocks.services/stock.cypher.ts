@@ -57,3 +57,6 @@ export const cardUpgradeItemAllCypher: string = `
     WHERE NOT EXISTS((c)-[:LISTED]->())
     AND c.transferred IS NULL 
     RETURN c`;
+
+
+    

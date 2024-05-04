@@ -112,3 +112,27 @@ export interface MintedCardMetaData {
 
 
 
+export interface StoreCardUpgradeData {
+    currencyName: string;
+    editionAddress: string;
+    endTime: string;
+    experience: number;
+    id: string;
+    image: string;
+    lister: string;
+    listingId: number;
+    minted: boolean;
+    owner: string;
+    pricePerToken: number;
+    quantity: number;
+    quantityOwned: string;
+    skillEquipped: boolean;
+    startTime: string;
+    supply: string;
+    tier: string;
+    tokenId: string;
+    type: string;
+    uploader: string;
+    uploaderBeats: string;
+    uri: string;
+}
