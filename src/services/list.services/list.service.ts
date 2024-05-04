@@ -120,7 +120,7 @@ constructor(driver: Driver) {
 
 
 
-    public async listCardUpgradeItem(upgradeItemListing: ListingData, token: string) {
+    public async listCardUpgradeItem(token: string, upgradeItemListing: ListingData) {
         const tokenService: TokenService = new TokenService;
             try {
                 const lister: string = await tokenService.verifyAccessToken(token);
@@ -165,7 +165,7 @@ constructor(driver: Driver) {
 
                 await this.saveCardUpgradeListToDB(lister, upgradeItemListing, listingId);
 
-                return { success: "Card listing is successful" } as SuccessMessage;             
+                return { success: "Card upgrqade listing is successful" } as SuccessMessage;             
             } catch(error: any) {
                 console.log(error)
                 throw error;

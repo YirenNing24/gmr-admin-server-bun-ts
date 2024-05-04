@@ -56,6 +56,30 @@ const list = (app: Elysia): void => {
       }
     }, authorizationBearerSchema
   );
+
+
+  app.post('/admin/list/card-upgrade', async ({ headers, body }): Promise<SuccessMessage | Error> => {
+    try {
+        const authorizationHeader: string | undefined = headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+            throw new Error('Bearer token not found in Authorization header');
+        }
+        
+        const jwtToken: string = authorizationHeader.substring(7);
+        const driver: Driver = getDriver() as Driver;
+        const listService: ListService = new ListService(driver);
+        
+        const output: SuccessMessage | Error = await listService.listCardUpgradeItem(jwtToken, body)
+
+        return output as SuccessMessage | Error;
+    } catch (error: any) {
+      console.log(error)
+      throw error;
+    }
+  }, listCardSchema
+);
+
+
 };
 
 export default list;
