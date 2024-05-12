@@ -67,7 +67,7 @@ export const createCardSchema = {
 export const createUpgradeItemSchema ={
     headers: t.Object({ authorization: t.String() }),
     body: t.Object({ 
-        type: t.String(),
+        itemType: t.String(),
         tier: t.String(),
         quantity: t.Number(),
         experience: t.Number(),

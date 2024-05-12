@@ -237,7 +237,7 @@ export interface CardData {
  * @properry {string} 
  */
 export interface UpgradeItemData {
-    type: string;
+    itemType: string;
     tier: string;
     quantity: number;
     experience: number;
