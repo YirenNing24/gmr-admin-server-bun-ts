@@ -4,7 +4,8 @@
  */
 export const cardStockAllCypher: string = `
     MATCH (c:Card) 
-    WHERE NOT EXISTS((c)-[:LISTED]->())
+    WHERE NOT EXISTS((c)-[:SOLD]->())
+    
     AND c.transferred IS NULL 
     RETURN c`;
 

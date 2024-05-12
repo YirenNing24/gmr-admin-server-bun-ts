@@ -54,7 +54,7 @@ export default class StockService {
             await session.close();
 
             const cards: CardData[] = res.records.map(record => record.get("c").properties);
-
+            console.log(cards)
             return cards as CardData[]
         } catch (error: any) {
           return error;
