@@ -234,7 +234,6 @@ export default class StockService {
         }
     }
 
-
     public async cardUpgradeItemStock(): Promise<StoreCardUpgradeData[]> {
         try {
             const session: Session = this.driver.session();
@@ -250,7 +249,5 @@ export default class StockService {
             return error;
         }      
     }
-
-    
 
 }    

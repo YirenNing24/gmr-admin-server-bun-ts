@@ -80,7 +80,6 @@ export default class MintService {
 
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
-            console.error(error)
           throw error
         }
     };
