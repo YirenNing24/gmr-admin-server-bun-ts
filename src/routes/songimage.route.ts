@@ -8,6 +8,7 @@ import SongImageService from "../services/songimage.services/songimage.service";
 import { SuccessMessage } from "../services/mint.services/mint.interface";
 import { songImageSchema } from "../services/songimage.services/songimage.schema";
 import { SongImage } from "../services/songimage.services/songimage.interface";
+import { authorizationBearerSchema } from "../services/contract.services/contract.schema";
 
 const songImage = (app: Elysia<any, any>): void => {
 
@@ -45,10 +46,11 @@ const songImage = (app: Elysia<any, any>): void => {
 
       return output as SongImage[];
     } catch (error: any) {
+        console.log(error)
       throw error;
 
     }
-    }, songImageSchema
+    }, authorizationBearerSchema
   );
 
 }

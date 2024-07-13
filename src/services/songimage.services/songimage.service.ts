@@ -25,8 +25,9 @@ class SongImageService {
 				return new ValidationError("Access Denied", "User does not have permission to update contracts");
 			}
 
+            const beatMap: Object = {}
 			const connection: rt.Connection = await getRethinkDB();
-			const imageSong = { ...songImage, lastUpdate: Date.now(), uploader: username };
+			const imageSong = { ...songImage, lastUpdate: Date.now(), uploader: username, beatMap };
 
 			await rt.db('admin')
 				.table('songImage')
@@ -40,31 +41,32 @@ class SongImageService {
 		}
 	}
 
-	public async getSongImages(token: string): Promise<SongImage[]> {
-		try {
-			const tokenService: TokenService = new TokenService();
-			const securityService: SecurityService = new SecurityService();
+    public async getSongImages(token: string): Promise<SongImage[]> {
+        try {
+            const tokenService: TokenService = new TokenService();
+            const securityService: SecurityService = new SecurityService();
+    
+            const username: string = await tokenService.verifyAccessToken(token);
+            const access: string = await securityService.checkAccess(username);
+    
+            if (access !== "0") {
+                throw new ValidationError("Access Denied", "User does not have permission to view contracts");
+            }
+    
+            const connection: rt.Connection = await getRethinkDB();
+            const cursor = await rt.db('admin')
+                .table('songImage')
+                .run(connection);
+    
+            const songImages: SongImage[] = await cursor.toArray();
 
-			const username: string = await tokenService.verifyAccessToken(token);
-			const access: string = await securityService.checkAccess(username);
-
-			if (access !== "0") {
-				throw new ValidationError("Access Denied", "User does not have permission to view contracts");
-			}
-
-			const connection: rt.Connection = await getRethinkDB();
-			const cursor = await rt.db('admin')
-				.table('songImage')
-				.run(connection);
-
-			const songImages: SongImage[] = await cursor.toArray();
-
-			return songImages;
-		} catch (error: any) {
-			console.error("Error retrieving song images:", error);
-			throw error;
-		}
-	}
+            return songImages;
+        } catch (error: any) {
+            console.error("Error retrieving song images:", error);
+            throw error;
+        }
+    }
+    
 }
 
 export default SongImageService;

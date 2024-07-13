@@ -14,5 +14,6 @@ export interface SongImage {
 	imageBuffer: string;
 	songTitle: string;
 	uploader?: string;
+    beatMap?: string;
 	timestamp?: number;
 }
