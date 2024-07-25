@@ -23,13 +23,13 @@
     "cron": "^3.1.7",
     "crypto-random-string": "^5.0.0",
     "dotenv": "^16.4.5",
-    "elysia": "^1.0.27",
+    "elysia": "^1.1.4",
     "ethers": "^5.7.2",
-    "fast-jwt": "^4.0.1",
+    "fast-jwt": "^4.0.2",
     "nanoid": "^5.0.7",
-    "neo4j-driver": "^5.22.0",
+    "neo4j-driver": "^5.23.0",
     "rethinkdb": "^2.4.2",
     "scrypt-js": "^3.0.1",
-    "thirdweb": "^5.34.1"
+    "thirdweb": "^5.39.0"
   }
 }
