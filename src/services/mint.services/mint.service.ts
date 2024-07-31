@@ -2,9 +2,10 @@
 import { Driver, Session, ManagedTransaction } from 'neo4j-driver-core'
 
 //** THIRDWEB IMPORTS */
-import { Edition, NFT, Pack, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
+import { ChainId, Edition, NFT, Pack, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
-import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants';
+import { SECRET_KEY, PRIVATE_KEY, CHAIN, ADMIN_WALLET_ADDRESS } from '../../config/constants';
+import { Engine } from "@thirdweb-dev/engine";
 
 //** VALIDATION ERROR IMPORT
 import ValidationError from '../../errors/validation.error';
@@ -27,33 +28,35 @@ export default class MintService {
         this.driver = driver;
     };
 
-    public async createCard(token: string, createCardData: CreateCard): Promise < SuccessMessage | Error > {
+    public async createCard(token: string, createCardData: CreateCard): Promise<SuccessMessage | Error> {
         const tokenService: TokenService = new TokenService();
         const securityService: SecurityService = new SecurityService();
-
+    
         const username: string = await tokenService.verifyAccessToken(token);
         const access: string = await securityService.checkAccess(username);
+    
         try {
             if (access !== "0" && access !== "1") {
-                return new ValidationError("Access Denied", "User doest not have  permission to create cards");
-            };
-            
-            const contractAddress = await this.retrieveContracts(token)
-            const { editionAddress } = contractAddress
-
+                return new ValidationError("Access Denied", "User does not have permission to create cards");
+            }
+    
+            const contractAddress = await this.retrieveContracts(token);
+            const { editionAddress } = contractAddress;
+    
             if (!editionAddress) {
                 throw new Error("Edition address is undefined");
-            };
-
+            }
+    
             const storage: ThirdwebStorage = new ThirdwebStorage({
                 secretKey: SECRET_KEY,
             });
-
+    
             const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
                 secretKey: SECRET_KEY,
             });
+    
+            const { imageByte, ...metadata } = createCardData
 
-            const imageByte: string = createCardData.imageByte
             const byteImage: number[] = JSON.parse(createCardData.imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
             const [imageURI, cardContract] = await Promise.all([
@@ -61,28 +64,107 @@ export default class MintService {
                 sdk.getContract(editionAddress, 'edition'),
             ]);
 
-            const supplyAmount: number = createCardData.supply
+            const supplyAmount: number = createCardData.supply;
             const metadataWithSupply: MetadataWithSupply[] = Array(supplyAmount).fill({
                 supply: 1,
-                metadata: { 
-                    ...createCardData, 
+                metadata: {
+                    metadata,
                     image: imageURI,
                     uploader: "beats"
                 }
             });
+    
+            await cardContract.erc1155.mintBatch(metadataWithSupply);
+    
 
-            await cardContract.erc1155.mintBatch(metadataWithSupply)
-
-            //@ts-ignore
-            const stocks: MintedCardMetaData[] = await cardContract.erc1155.getOwned()
-
+            const stocks = await cardContract.erc1155.getOwned() as unknown as MintedCardMetaData[];
+    
             await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte);
-
+    
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
-          throw error
+            throw error;
         }
-    };
+    }
+    
+
+
+    // public async createCard(token: string, createCardData: CreateCard): Promise <SuccessMessage | Error> {
+
+    //     const engine = new Engine({
+    //         url: "http://0.0.0.0:3005",
+    //         accessToken: "<engine_access_token>",
+    //     });
+    
+    //     const tokenService: TokenService = new TokenService();
+    //     const securityService: SecurityService = new SecurityService();
+    
+    //     const username: string = await tokenService.verifyAccessToken(token);
+    //     const access: string = await securityService.checkAccess(username);
+    //     try {
+    //         if (access !== "0" && access !== "1") {
+    //             return new ValidationError("Access Denied", "User does not have permission to create cards");
+    //         };
+            
+    //         const contractAddress = await this.retrieveContracts(token);
+    //         const { editionAddress } = contractAddress;
+    
+    //         if (!editionAddress) {
+    //             throw new Error("Edition address is undefined");
+    //         };
+    
+    //         const storage: ThirdwebStorage = new ThirdwebStorage({
+    //             secretKey: SECRET_KEY,
+    //         });
+    
+    //         const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
+    //             secretKey: SECRET_KEY,
+    //         });
+    
+    //         const imageByte: string = createCardData.imageByte;
+    //         const byteImage: number[] = JSON.parse(createCardData.imageByte);
+    //         const buffer: Buffer = Buffer.from(byteImage);
+    //         const [imageURI] = await Promise.all([
+    //             storage.upload(buffer),
+
+    //         ]);
+    
+    //         const supplyAmount: number = createCardData.supply;
+    //         const metadataWithSupply: Array<{ metadata: { [key: string]: any }, supply: string }> = Array(supplyAmount).fill({
+    //             supply: "1",
+    //             metadata: {
+    //                 ...createCardData,
+    //                 image: imageURI,
+    //                 uploader: "beats"
+    //             }
+    //         });
+    
+    //         const chain: string = "421614"; // ARBITRUM SEPOLIA
+    //         await engine.erc1155.mintBatchTo(chain, editionAddress, "", {
+    //             receiver: ADMIN_WALLET_ADDRESS,  // Assuming the receiver should be the username
+    //             metadataWithSupply,
+    //             txOverrides: {}
+    //         });
+    
+    //         // //@ts-ignore
+    //         // const stocks: MintedCardMetaData[] = await cardContract.erc1155.getOwned();
+
+    //         const stocks = await engine.erc1155.getOwned(ADMIN_WALLET_ADDRESS, chain, editionAddress) as unknown as MintedCardMetaData[];
+    
+    //         await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte);
+    
+    //         return { success: "Card mint is successful" } as SuccessMessage;
+    //     } catch (error: any) {
+    //         throw error;
+    //     }
+    // };
+    
+
+
+
+
+
+
 
     private async saveCardToMemgraph(stocks: MintedCardMetaData[], editionAddress: string, uploaderBeats: string, imageByte: string) {
         try {
