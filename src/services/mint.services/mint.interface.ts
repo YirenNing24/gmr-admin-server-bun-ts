@@ -222,6 +222,7 @@ export interface CardData {
     lister?: string;
     pricePerToken?: number
     currencyName?: string
+    packed?: boolean
   }
 
 /**
@@ -262,4 +263,52 @@ export interface MintedUpgradeItemMetadata {
     metadata: UpgradeItemData;
     type: string;
     supply: string;
+}
+
+
+/**
+ * Represents data about a card pack.
+ * @interface
+ * @property {string} contents - The contents of the card box.
+ * @property {string} description - The description of the card box.
+ * @property {string} name - The name of the card box.
+ * @property {string} openStartTime - The start time for opening the card box.
+ * @property {string} quantity - The quantity of the card box.
+ * @property {string} quantityPerReward - The quantity per reward associated with the card box.
+ * @property {string} rewardsPerPack - The rewards per pack of the card box.
+ * @property {string} token - The token associated with the card box.
+ * @property {string} totalRewards - The total number of rewards associated with the card box.
+ * @property {string} type - The type of the card box.
+ */
+export interface CardPackData {
+    imageByte: string;
+    contents: string;
+    description: string;
+    name: string;
+    openStartTime: string;
+    quantity: string;
+    quantityPerReward: string;
+    rewardsPerPack: string;
+    token: string;
+    totalRewards: string;
+    type: string;
+    cardField: CardField[]
+}
+
+
+/**
+ * Represents the mandatory params of a card
+ * @interface
+ * @property {string} name - The name of the card.
+ * @property {string} tokenId - The token ID associated with the card field.
+ * @property {string} quantityPerReward - The quantity of the field per reward.
+ * @property {string} totalRewards - The total number of rewards associated with the card field.
+ * @property {string} assetContract - The asset contract associated with the card field.
+ */
+export interface CardField {
+    name: string;
+    tokenId: string;
+    quantityPerReward: string;
+    totalRewards: string;
+    assetContract: string;
 }

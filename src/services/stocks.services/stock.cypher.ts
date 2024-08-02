@@ -10,6 +10,16 @@ export const cardStockAllCypher: string = `
     RETURN c`;
 
 /**
+ * Cypher query to retrieve all cards in stock that are not listed and not transferred.
+ */
+export const cardStockAllUnpacked: string = `
+    MATCH (c:Card)
+    WHERE NOT EXISTS((c)-[:SOLD]->()) 
+    AND c.transferred IS NULL
+    AND (c.packed IS NULL OR c.packed = false)
+    RETURN c`;
+
+/**
  * Cypher query to retrieve cards that have a LISTED relationship with a CardStore.
  */
 export const cardListedCypher: string = `

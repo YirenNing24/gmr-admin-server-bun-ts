@@ -7,9 +7,14 @@ import { Driver } from "neo4j-driver";
 
 //** SERVICE IMPORT
 import StockService from "../services/stocks.services/stocks.service";
-import { CardData, SuccessMessage, UpgradeItemData } from "../services/mint.services/mint.interface";
+
+//** TYPE INTERFACE
+import { CardData, SuccessMessage } from "../services/mint.services/mint.interface";
 import { populateCardListSchema } from "../services/stocks.services/stock.schema";
+
+//** SCHEMA IMPORT
 import { StoreCardUpgradeData } from "../services/stocks.services/stocks.interface";
+
 
 const stocks = (app: Elysia<any, any>): void => {
   app.get('/admin/card/stock', async () => {
@@ -24,7 +29,8 @@ const stocks = (app: Elysia<any, any>): void => {
     }
   });
 
-  app.get('/admin/card/listed', async () => {
+
+  app.get('/admin/card/listed', async (): Promise<CardData[] | Error> => {
     try {
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
@@ -36,7 +42,21 @@ const stocks = (app: Elysia<any, any>): void => {
     }
   });
 
-  app.get('/admin/card/sold', async () => {
+
+  app.get('/admin/card/unpacked', async (): Promise<CardData[] | Error> => {
+    try {
+      const driver = getDriver() as Driver
+      const stockService = new StockService(driver);
+      const output: CardData[] | Error = await stockService.cardStockUnpacked();
+      
+      return output as CardData[] | Error
+    } catch (error: any) {
+      return error
+    }
+  });
+
+
+  app.get('/admin/card/sold', async (): Promise<CardData[] | Error> => {
     try {
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
@@ -47,6 +67,7 @@ const stocks = (app: Elysia<any, any>): void => {
       return error;
     }
   });
+
 
   app.post('/admin/card/populate-card-list', async ({ headers, body }): Promise<SuccessMessage> => {
     try {
@@ -68,6 +89,7 @@ const stocks = (app: Elysia<any, any>): void => {
     }, populateCardListSchema
   );
 
+
   app.get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
     try {
       const driver = getDriver() as Driver
@@ -82,7 +104,6 @@ const stocks = (app: Elysia<any, any>): void => {
 
 
 };
-
 
 
 export default stocks;

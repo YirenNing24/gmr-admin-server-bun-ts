@@ -18,7 +18,9 @@ import AuthService from '../user.services/auth.service';
 import TokenService from '../security.services/token.service';
 
 //** CYPHER IMPORT
-import { cardListedCypher, cardSoldCypher, cardStockAllCypher, cardUpgradeItemAllCypher, saveCardListedCypher, saveCardValidCypher, saveCardValidCypherMerge } from './stock.cypher';
+import { cardListedCypher, cardSoldCypher, cardStockAllCypher, 
+        cardStockAllUnpacked, cardUpgradeItemAllCypher, saveCardListedCypher, 
+        saveCardValidCypher, saveCardValidCypherMerge } from './stock.cypher';
 
 
 export default class StockService {
@@ -44,22 +46,46 @@ export default class StockService {
         }
     }
 
+    public async cardStockUnpacked() {
+        try {
+            const session: Session = this.driver.session();
+            const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+                tx.run(cardStockAllUnpacked)
+            );
+            await session.close();
+
+            const cards: CardData[] = result.records.map(record => record.get("c").properties);
+
+            return cards as CardData[];
+        } catch (error: any) {
+            return error;
+        }
+    }
+
     public async cardListed(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
             const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
                 tx.run(cardListedCypher)
             );
-
+    
             await session.close();
-
-            const cards: CardData[] = res.records.map(record => record.get("c").properties);
-            console.log(cards)
-            return cards as CardData[]
+    
+            const currentDate = new Date();
+            const cards: CardData[] = res.records
+                .map(record => record.get("c").properties)
+                .filter(card => {
+                    const [month, day, year] = card.endTime.split('/');
+                    const endTime = new Date(`20${year}-${month}-${day}`);
+                    return endTime >= currentDate;
+                });
+    
+            return cards as CardData[];
         } catch (error: any) {
-          return error;
+            return error;
         }
     }
+    
 
     public async cardSold(): Promise<CardData[] | Error> {
         try {
@@ -76,6 +102,9 @@ export default class StockService {
             return error;
         }
     }
+
+
+
 
     public async populateCardListFromContract(token: string, password: string) {
         const listService: ListService = new ListService(this.driver);
@@ -97,10 +126,10 @@ export default class StockService {
     
             // Fetch all card listings and NFTs in parallel
             const [cardsValid, cardNFTs] = await Promise.all([
-                //@ts-ignore
-                marketplaceContract.directListings.getAllValid() as Promise<CardsListedValid[]>,
-                //@ts-ignore
-                cardContract.getAll() as Promise<MintedCardMetaData[]>
+
+                marketplaceContract.directListings.getAllValid() as unknown as Promise<CardsListedValid[]>,
+
+                cardContract.getAll() as unknown as Promise<MintedCardMetaData[]>
             ]);
     
             // Fetch all images in parallel
