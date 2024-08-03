@@ -281,18 +281,25 @@ export interface MintedUpgradeItemMetadata {
  * @property {string} type - The type of the card box.
  */
 export interface CardPackData {
-    imageByte: string;
-    contents: string;
-    description: string;
+    
+
     name: string;
+    description: string;
+    contents: string;
     openStartTime: string;
+    type: string;
+    tokenField: TokenField
+    cardField: CardField[];
+    rewardsPerPack: string;
+    imageByte: string;
+}
+
+export interface TokenField {
+    token: string;
     quantity: string;
     quantityPerReward: string;
-    rewardsPerPack: string;
-    token: string;
     totalRewards: string;
-    type: string;
-    cardField: CardField[]
+
 }
 
 

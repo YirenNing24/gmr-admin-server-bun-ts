@@ -86,191 +86,7 @@ export default class MintService {
         }
     }
 
-    public async createCardPack(token: string, cardPackData: CardPackData) {
-        try {
-            const username = await this.verifyUser(token);
-            await this.checkUserAccess(username);
-    
-            const { packAddress, editionAddress } = await this.retrieveContracts(token);
-            this.validateContractAddresses(packAddress, editionAddress);
-    
-            const imageURI = await this.uploadImage(cardPackData.imageByte);
 
-            //@ts-ignore
-            const { packContract, editionContract } = await this.getContracts(packAddress, editionAddress);
-            
-            //@ts-ignore
-            await this.setApprovalForAll(editionContract, packAddress);
-    
-            const erc1155Rewards = this.createErc1155Rewards(cardPackData);
-            const pack = this.createPackData(cardPackData, imageURI, erc1155Rewards);
-    
-            await packContract.create(pack);
-        } catch (error: any) {
-            throw new Error(`Failed to create card pack: ${error.message}`);
-        }
-    }
-    
-    private async verifyUser(token: string): Promise<string> {
-        const tokenService = new TokenService();
-        return await tokenService.verifyAccessToken(token);
-    }
-    
-    private async checkUserAccess(username: string): Promise<void> {
-        const securityService = new SecurityService();
-        const access = await securityService.checkAccess(username);
-    
-        if (access !== "0" && access !== "1") {
-            throw new ValidationError(
-                "Access Denied",
-                "User does not have permission to create cards"
-            );
-        }
-    }
-    
-    private validateContractAddresses(packAddress: string | undefined, editionAddress: string | undefined): void {
-        if (!packAddress || !editionAddress) {
-            throw new Error("Contract addresses are undefined");
-        }
-    }
-    
-    private async uploadImage(imageByte: string): Promise<string> {
-        const storage = new ThirdwebStorage({ secretKey: SECRET_KEY });
-        const buffer = Buffer.from(JSON.parse(imageByte));
-        return await storage.upload(buffer);
-    }
-    
-    private async getContracts(packAddress: string, editionAddress: string): Promise<{ packContract: any, editionContract: any }> {
-        const sdk = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-            secretKey: SECRET_KEY,
-        });
-    
-        const [packContract, editionContract] = await Promise.all([
-            sdk.getContract(packAddress, "pack"),
-            sdk.getContract(editionAddress, "edition"),
-        ]);
-    
-        return { packContract, editionContract };
-    }
-    
-    private async setApprovalForAll(editionContract: any, packAddress: string): Promise<void> {
-        await editionContract.setApprovalForAll(packAddress, true);
-    }
-    
-    private createErc1155Rewards(cardPackData: CardPackData): any[] {
-        return cardPackData.cardField.map((cardField) => ({
-            contractAddress: cardField.assetContract,
-            tokenId: cardField.tokenId,
-            quantityPerReward: cardField.quantityPerReward,
-            totalRewards: cardField.totalRewards,
-        }));
-    }
-    
-    private createPackData(cardPackData: CardPackData, imageURI: string, erc1155Rewards: any[]): any {
-        const {
-            name,
-            description,
-            type,
-            quantityPerReward,
-            quantity,
-            totalRewards,
-            openStartTime,
-            rewardsPerPack,
-            token
-        } = cardPackData;
-    
-        return {
-            packMetadata: {
-                name,
-                description,
-                image: imageURI,
-                type,
-            },
-            erc20Rewards: [
-                {
-                    contractAddress: token,
-                    quantityPerReward,
-                    quantity,
-                    totalRewards,
-                },
-            ],
-            erc1155Rewards,
-            openStartTime: new Date(openStartTime),
-            rewardsPerPack,
-        };
-    }
-    
-    
-    // public async createCard(token: string, createCardData: CreateCard): Promise<SuccessMessage | Error> {
-    //     const engine = new Engine({
-    //         url: "http://0.0.0.0:3005",
-    //         accessToken: ENGINE_ACCESS_TOKEN,
-    //     });
-    
-    //     const tokenService: TokenService = new TokenService();
-    //     const securityService: SecurityService = new SecurityService();
-    
-    //     const username: string = await tokenService.verifyAccessToken(token);
-    //     const access: string = await securityService.checkAccess(username);
-    //     try {
-    //         if (access !== "0" && access !== "1") {
-    //             return new ValidationError("Access Denied", "User does not have permission to create cards");
-    //         }
-    
-    //         const contractAddress = await this.retrieveContracts(token);
-    //         const { editionAddress } = contractAddress;
-    
-    //         if (!editionAddress) {
-    //             throw new Error("Edition address is undefined");
-    //         }
-    
-    //         const storage: ThirdwebStorage = new ThirdwebStorage({
-    //             secretKey: SECRET_KEY,
-    //         });
-    
-    //         // const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-    //         //     secretKey: SECRET_KEY,
-    //         // });
-    //         const { imageByte, ...metadata } = createCardData;
-    
-    //         const byteImage: number[] = JSON.parse(createCardData.imageByte);
-    //         const buffer: Buffer = Buffer.from(byteImage);
-    //         const [imageURI] = await Promise.all([
-    //             storage.upload(buffer),
-    //         ]);
-    
-    //         const supplyAmount: number = createCardData.supply;
-    //         const metadataWithSupply: Array<{ metadata: { [key: string]: any }, supply: string }> = Array(supplyAmount).fill({
-    //             supply: "1",
-    //             metadata: {
-    //                 metadata,
-    //                 image: imageURI,
-    //                 uploader: "beats"
-    //             }
-    //         });
-    
-    //         const chain: string = "421614"; // ARBITRUM SEPOLIA
-    //         await engine.erc1155.mintBatchTo(chain, editionAddress, ADMIN_WALLET_ADDRESS, {
-    //             receiver: ADMIN_WALLET_ADDRESS,  // Assuming the receiver should be the username
-    //             metadataWithSupply,
-    //             txOverrides: {}
-    //         });
-    
-    //         // //@ts-ignore
-    //         // const stocks: MintedCardMetaData[] = await cardContract.erc1155.getOwned();
-    
-    //         const stocks = await engine.erc1155.getOwned(ADMIN_WALLET_ADDRESS, chain, editionAddress) as unknown as MintedCardMetaData[];
-    
-    //         await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte);
-    
-    //         return { success: "Card mint is successful" } as SuccessMessage;
-    //     } catch (error: any) {
-    //         console.log;
-    //         throw error;
-    //     }
-    // }
-    
-    
     private async saveCardToMemgraph(stocks: MintedCardMetaData[], editionAddress: string, uploaderBeats: string, imageByte: string) {
         try {
             const session: Session = this.driver.session();
@@ -319,136 +135,155 @@ export default class MintService {
 
             throw error;
         }
-    };
-    
+    }
 
-    public async createCardBox(cardBoxData: CardBundleData, base64Image: string, cardFields: CardField[], uploader: string, packAddress: string): Promise < void | Error > {
+
+    public async createCardPack(token: string, cardPackData: CardPackData) {
+        const tokenService: TokenService = new TokenService();
+        const securityService: SecurityService = new SecurityService();
+    
         try {
+            const username: string = await tokenService.verifyAccessToken(token);
+            const access: string = await securityService.checkAccess(username);
+    
+            if (access !== "0" && access !== "1") {
+                throw new ValidationError(
+                    "Access Denied",
+                    "User does not have permission to create cards"
+                );
+            }
+    
+            const { packAddress, editionAddress } = await this.retrieveContracts(
+                token
+            );
+    
+            if (!packAddress || !editionAddress) {
+                throw new Error("Contract addresses are undefined");
+            }
+    
             const storage: ThirdwebStorage = new ThirdwebStorage({
                 secretKey: SECRET_KEY,
             });
-
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                secretKey: SECRET_KEY
-            });
-
-            const editionAddress = cardFields[0].assetContract;
-            const buffer: Buffer = Buffer.from(base64Image, "base64");
-            const [imageURI, cardBoxContract, editionContract]: [string, Pack, Edition] = await Promise.all([
+    
+            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(
+                PRIVATE_KEY,
+                CHAIN,
+                {
+                    secretKey: SECRET_KEY,
+                }
+            );
+    
+            const buffer: Buffer = Buffer.from(JSON.parse(cardPackData.imageByte));
+            const [imageURI, packContract, editionContract] = await Promise.all([
                 storage.upload(buffer),
-                sdk.getContract(packAddress, 'pack'),
-                sdk.getContract(editionAddress, 'edition')
+                sdk.getContract(packAddress, "pack"),
+                sdk.getContract(editionAddress, "edition"),
             ]);
-
+    
             // Set approval for the pack contract to manage editions
             await editionContract.setApprovalForAll(packAddress, true);
-
-            const {
-                description,
-                name,
-                openStartTime,
-                quantity,
-                quantityPerReward,
-                rewardsPerPack,
-                token,
-                totalRewards,
-                type
-            } = cardBoxData;
-
-            const erc1155Rewards = cardFields.map((cardField) => ({
+    
+            const erc1155Rewards = cardPackData.cardField.map((cardField) => ({
                 contractAddress: cardField.assetContract,
                 tokenId: cardField.tokenId,
                 quantityPerReward: cardField.quantityPerReward,
                 totalRewards: cardField.totalRewards,
             }));
-
+    
+            const { name, description, type, openStartTime, rewardsPerPack } = cardPackData;
+            const { quantityPerReward, quantity, totalRewards } = cardPackData.tokenField
+    
             const pack = {
                 packMetadata: {
                     name,
                     description,
                     image: imageURI,
                     type,
-                    uploader,
                 },
-                erc20Rewards: [{
-                    contractAddress: token,
-                    quantityPerReward,
-                    quantity,
-                    totalRewards,
-                }],
+                erc20Rewards: [
+                    {
+                        contractAddress: token,
+                        quantityPerReward,
+                        quantity,
+                        totalRewards,
+                    },
+                ],
                 erc1155Rewards,
                 openStartTime: new Date(openStartTime),
                 rewardsPerPack,
             };
+    
+            await packContract.create(pack);
 
-            // Create the card box
-            const transaction = await cardBoxContract.create(pack);
+            const packs: NFT[] = await packContract.erc1155.getOwned();
 
-            // Fetch the stocks
-            const stocks = await cardBoxContract.erc1155.getOwned();
+            this.savePackToMemgraph(username, packs);
+        } catch (error: any) {
+            throw new Error(`Failed to create card pack: ${error.message}`);
+        }
+    }
+
+
+    private async savePackToMemgraph(uploader: string, packs: NFT[]) {
+        for (const cardBox of packs) {
+            const {
+                metadata: {
+                    id,
+                    name,
+                    description,
+                    image,
+                    type,
+                    uri,
+                    owner
+                }
+            } = cardBox;
 
             const session: Session = this.driver.session();
-            for (const cardBox of stocks) {
-                const {
-                    metadata: {
+            // Create or update the Pack node in Neo4j
+            await session.executeWrite((tx) =>
+                tx.run(
+                    `
+                  MERGE (p:Pack {id: $id})
+                  ON CREATE SET
+                      p.description = $description,
+                      p.image = $image,
+                      p.name = $name,
+                      p.uri = $uri,
+                      p.owner = $owner,
+                      p.type = $type,
+                      p.uploader = $uploader
+                  RETURN p
+                  `, {
                         id,
-                        name,
                         description,
                         image,
-                        type,
+                        name,
                         uri,
-                        owner
+                        owner,
+                        type,
+                        uploader
                     }
-                } = cardBox;
+                )
+            );
 
-                // Create or update the Pack node in Neo4j
-                await session.executeWrite((tx) =>
-                    tx.run(
-                        `
-                      MERGE (p:Pack {id: $id})
-                      ON CREATE SET
-                          p.description = $description,
-                          p.image = $image,
-                          p.name = $name,
-                          p.uri = $uri,
-                          p.owner = $owner,
-                          p.type = $type,
-                          p.uploader = $uploader
-                      RETURN p
-                      `, {
-                            id,
-                            description,
-                            image,
-                            name,
-                            uri,
-                            owner,
-                            type,
-                            uploader
-                        }
-                    )
-                );
-
-                // Create a relationship between the Pack and User nodes
-                await session.executeWrite((tx) =>
-                    tx.run(
-                        `
-                      MATCH (p:Pack {id: $id})
-                      MATCH (u:User {username: $uploader})
-                      MERGE (p)-[:UPLOADED]->(u)
-                      `, {
-                            id,
-                            uploader
-                        }
-                    )
-                );
-            }
+            // Create a relationship between the Pack and uploader
+            await session.executeWrite((tx) =>
+                tx.run(
+                    `
+                  MATCH (p:Pack {id: $id})
+                  MATCH (u:User {username: $uploader})
+                  MERGE (p)-[:UPLOADED]->(u)
+                  `, {
+                        id,
+                        uploader
+                    }
+                )
+            );
 
             await session.close();
-        } catch (error) {
-            console.error('An error occurred:', error);
-            throw error;
         }
-    };
+    }
+
 
     public async retrieveContracts(token: string): Promise<{editionAddress: string | undefined, cardItemUpgrade: string | undefined, packAddress: string | undefined}> {
         const contractService: ContractService = new ContractService();
@@ -472,7 +307,8 @@ export default class MintService {
         }
 
         return { editionAddress, cardItemUpgrade, packAddress }
-    };
+    }
+
 
     public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData) {
         const tokenService: TokenService = new TokenService();
@@ -521,7 +357,7 @@ export default class MintService {
             throw error;
 
         }
-    };
+    }
 
 
     private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,) {
@@ -566,5 +402,5 @@ export default class MintService {
             throw error;
         }
 
-    };
+    }
 }
