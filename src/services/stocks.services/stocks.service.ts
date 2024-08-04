@@ -40,6 +40,11 @@ export default class StockService {
 
             const cards: CardData[] = result.records.map(record => record.get("c").properties);
 
+            cards.forEach(cardData => {
+                console.log(cardData.name)
+                
+            });
+
             return cards as CardData[];
         } catch (error: any) {
             return error;
@@ -55,6 +60,10 @@ export default class StockService {
             await session.close();
 
             const cards: CardData[] = result.records.map(record => record.get("c").properties);
+            cards.forEach(cardData => {
+                console.log(cardData.name)
+                
+            });
 
             return cards as CardData[];
         } catch (error: any) {
