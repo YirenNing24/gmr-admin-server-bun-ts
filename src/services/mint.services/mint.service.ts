@@ -22,7 +22,7 @@ import { Buffer } from "buffer";
 import { MintedCardMetaData } from '../stocks.services/stocks.interface';
 
 
-export default class MintService {
+class MintService {
 
     private driver: Driver;
     constructor(driver: Driver) {
@@ -405,3 +405,5 @@ export default class MintService {
 
     }
 }
+
+export default  MintService

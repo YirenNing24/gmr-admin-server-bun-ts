@@ -1,27 +1,28 @@
 //**MEMGRAPH IMPORTS */
-import { Driver, QueryResult, Session, ManagedTransaction } from 'neo4j-driver-core';
+import { Driver, ManagedTransaction, QueryResult, Session } from 'neo4j-driver-core';
 
 //** THIRDWEB SDK IMPORT
 import { Edition, MarketplaceV3, ThirdwebSDK } from '@thirdweb-dev/sdk';
 
 //** TYPE INTERFACE IMPORT
-import { CardData, UpgradeItemData } from '../mint.services/mint.interface';
 import { CardListingContracts } from '../list.services/list.interface';
+import { CardData } from '../mint.services/mint.interface';
 
 //** CONFIGS IMPORT
 import { CHAIN, PRIVATE_KEY, SECRET_KEY } from '../../config/constants';
 
 //** SERVICE IMPORT
 import ListService from '../list.services/list.service';
-import { CardsListedValid, MintedCardMetaData, StoreCardUpgradeData } from './stocks.interface';
-import AuthService from '../user.services/auth.service';
 import TokenService from '../security.services/token.service';
+import AuthService from '../user.services/auth.service';
+import { CardsListedValid, MintedCardMetaData, StoreCardUpgradeData } from './stocks.interface';
 
 //** CYPHER IMPORT
-import { cardListedCypher, cardSoldCypher, cardStockAllCypher, 
-        cardStockAllUnpacked, cardUpgradeItemAllCypher, saveCardListedCypher, 
-        saveCardValidCypher, saveCardValidCypherMerge } from './stock.cypher';
-
+import {
+    cardListedCypher, cardSoldCypher, cardStockAllCypher,
+    cardStockAllUnpacked, cardUpgradeItemAllCypher, saveCardListedCypher,
+    saveCardValidCypher, saveCardValidCypherMerge
+} from './stock.cypher';
 
 export default class StockService {
     private driver: Driver;
@@ -111,9 +112,6 @@ export default class StockService {
             return error;
         }
     }
-
-
-
 
     public async populateCardListFromContract(token: string, password: string) {
         const listService: ListService = new ListService(this.driver);
