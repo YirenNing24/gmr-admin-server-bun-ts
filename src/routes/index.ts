@@ -7,6 +7,7 @@ import mint from "./mint.routes";
 import user from "./player.routes";
 import nft from "./nft.routes";
 import songImage from "./songimage.route";
+import gacha from "./gacha.routes";
 
 
 const routes = (app: any): void => {
@@ -18,7 +19,8 @@ const routes = (app: any): void => {
         list,
         user,
         nft,
-        songImage
+        songImage,
+        gacha
     ].forEach(route => route(app))
 };
 

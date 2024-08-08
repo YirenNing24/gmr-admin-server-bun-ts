@@ -4,7 +4,7 @@ import { hash } from "bcrypt-ts";
 import { NewUser } from "../services/user.services/interface";
 
 // Replace this array with your actual data
-const tableNames: string[] = ['chat', 'contracts', 'notifications', 'cardImage', 'users', 'songImage'];
+const tableNames: string[] = ['chat', 'contracts', 'notifications', 'cardImage', 'users', 'songImage', 'cardPacks'];
 
 const createDatabaseAndTables = async (): Promise<void> => {
   try {

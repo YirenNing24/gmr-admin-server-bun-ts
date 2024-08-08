@@ -41,10 +41,7 @@ export default class StockService {
 
             const cards: CardData[] = result.records.map(record => record.get("c").properties);
 
-            cards.forEach(cardData => {
-                console.log(cardData.name)
-                
-            });
+
 
             return cards as CardData[];
         } catch (error: any) {
@@ -61,10 +58,6 @@ export default class StockService {
             await session.close();
 
             const cards: CardData[] = result.records.map(record => record.get("c").properties);
-            cards.forEach(cardData => {
-                console.log(cardData.name)
-                
-            });
 
             return cards as CardData[];
         } catch (error: any) {
@@ -197,7 +190,7 @@ export default class StockService {
     
     private async saveCardValid(card: CardsListedValid, imageByteStringValid: string) {
 
-        console.log(card)
+
         try {
             const { asset, assetContractAddress, quantity, startTimeInSeconds, endTimeInSeconds,   } = card as CardsListedValid;
             const startDate = new Date(startTimeInSeconds * 1000); // Convert seconds to milliseconds

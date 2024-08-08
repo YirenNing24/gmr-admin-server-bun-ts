@@ -27,13 +27,14 @@ class GachaService {
             const connection: rt.Connection = await getRethinkDB();
 
             await rt.db('admin')
-                .table('contracts')
+                .table('cardPacks')
                 .insert(cardpackData)
                 .run(connection);
 
 
             return { success: "Card pack settings created" };
         } catch (error: any) {
+            console.log(error)
             throw new ValidationError("Error processing request", error.message);
         }
     }
