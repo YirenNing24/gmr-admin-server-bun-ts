@@ -20,6 +20,7 @@ class SecurityService {
 
             return access as string
         } catch (error: any) {
+            console.log(error)
           return error;
         }
     }

@@ -15,6 +15,7 @@ import { cardPackDataSchema } from '../services/gacha.services/gacha.schema';
 
 
 
+
 const gacha = (app: Elysia): void => {
     app.post('/admin/card_pack/create_settings', async ({ headers, body }): Promise<SuccessMessage | Error> => {
         try {
@@ -33,7 +34,25 @@ const gacha = (app: Elysia): void => {
           throw error;
         }
       }, cardPackDataSchema
-    );
+    )
+
+    .get('/admin/card_pack/settings', async ({ headers, params }) => {
+      try {
+        const authorizationHeader: string | undefined = headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+            throw new Error('Bearer token not found in Authorization header');
+        }
+        const jwtToken: string = authorizationHeader.substring(7);
+        const gachaService: GachaService = new GachaService();
+        
+        const output = await gachaService.getCardPackSettings(jwtToken, params);
+
+        return output;
+      } catch(error: any) {
+        throw error
+      }
+      }
+    )
 
 }
 

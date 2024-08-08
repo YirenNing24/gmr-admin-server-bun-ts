@@ -40,6 +40,39 @@ class GachaService {
     }
 
 
+    public async getCardPackSettings(token: string) {
+        try {
+            const tokenService: TokenService = new TokenService();
+            const securityService: SecurityService = new SecurityService();
+            
+            const username: string = await tokenService.verifyAccessToken(token);
+            const access: string = await securityService.checkAccess(username);
+            
+            if (access !== "0" && access !== "1") {
+                return new ValidationError("Access Denied", "User does not have permission to view packs");
+            }
+    
+            const connection: rt.Connection = await getRethinkDB();
+            
+            const result = await rt.db('admin')
+                .table('cardPacks')
+                .run(connection);
+    
+            const cardPacks: CardPackData[] = await result.toArray();
+            
+            if (cardPacks.length === 0) {
+                return [];
+            }
+    
+            return cardPacks;
+        } catch (error: any) {
+            console.log(error);
+            throw error
+        }
+    }
+    
+
+
 }
 
 export default GachaService;
