@@ -10,6 +10,11 @@ import { CardPackData } from "./gacha.interface";
 import rt from 'rethinkdb'
 import { getRethinkDB } from "../../db/rethink";
 
+//** THIRDWEB IMPORTS
+import thirdweb from 'thirdweb';
+
+
+
 class GachaService {
 
     public async createCardPackSettings(token: string, cardpackData: CardPackData) {
@@ -68,6 +73,27 @@ class GachaService {
         } catch (error: any) {
             console.log(error);
             throw error
+        }
+    }
+
+
+    public async mintCardPack(token: string, mintCardPack: any) {
+        try {
+            const tokenService: TokenService = new TokenService();
+            const securityService: SecurityService = new SecurityService();
+        
+            const username: string = await tokenService.verifyAccessToken(token);
+            const access: string = await securityService.checkAccess(username);
+        
+            if (access !== "0" && access !== "1") {
+                return new ValidationError("Access Denied", "User does not have permission to create packs");
+            }
+
+
+
+
+        } catch(error: any) {
+          throw error
         }
     }
     

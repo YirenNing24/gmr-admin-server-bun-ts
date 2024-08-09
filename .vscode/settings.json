@@ -6,6 +6,7 @@
         "ipfs",
         "Memgraph",
         "SEPOLIA",
-        "songimage"
+        "songimage",
+        "thirdweb"
     ]
 }

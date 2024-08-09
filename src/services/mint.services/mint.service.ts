@@ -404,6 +404,29 @@ class MintService {
         }
 
     }
+
+
+
+    public async createPack(token: string, createPack: any) {
+        try {
+
+        } catch(error: any) {
+            throw error
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 export default  MintService
