@@ -36,7 +36,7 @@ const gacha = (app: Elysia): void => {
       }, cardPackDataSchema
     )
 
-    .get('/admin/card_pack/settings', async ({ headers, params }) => {
+    .get('/admin/card_pack/settings', async ({ headers }) => {
       try {
         const authorizationHeader: string | undefined = headers.authorization;
         if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -45,7 +45,7 @@ const gacha = (app: Elysia): void => {
         const jwtToken: string = authorizationHeader.substring(7);
         const gachaService: GachaService = new GachaService();
         
-        const output = await gachaService.getCardPackSettings(jwtToken, params);
+        const output = await gachaService.getCardPackSettings(jwtToken);
 
         return output;
       } catch(error: any) {
