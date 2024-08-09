@@ -2,7 +2,7 @@ import Elysia from 'elysia';
 import { getDriver } from '../db/memgraph'
 import MintService from "../services/mint.services/mint.service";
 import { Driver } from 'neo4j-driver';
-import { createCardSchema, createUpgradeItemSchema } from '../services/mint.services/mint.schema';
+import { createCardSchema, createPackSchema, createUpgradeItemSchema } from '../services/mint.services/mint.schema';
 import { SuccessMessage } from '../services/mint.services/mint.interface';
 
 
@@ -44,23 +44,29 @@ const mint = (app: Elysia ) => {
         throw error
       }
     }, createUpgradeItemSchema
+  )
+
+     .post('/admin/create_card_pack', async ({ headers, body }) => {
+         try {
+          const authorizationHeader: string = headers.authorization;
+          if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+              throw new Error('Bearer token not found in Authorization header');
+          }
+          const jwtToken: string = authorizationHeader.substring(7);
+
+
+             const driver: Driver = getDriver() as Driver;
+             const mintService: MintService = new MintService(driver);
+             const output: SuccessMessage = await mintService.createPack(jwtToken, body);
+
+             return output;
+         } catch (error) {
+             console.error('Error creating card:', error);
+             throw error
+         }
+    }, createPackSchema
+  
   );
-
-    // app.post('/admin/create-card-box', async (context) => {
-    //     try {
-    //         const { data, base64, cardFields, uploader, packAddress } = 
-    //         context.body as { data: CardBoxData, base64: string, cardFields: CardField[] , uploader: string, packAddress: string}
-
-    //         const driver = getDriver() as Driver
-    //         const mintService: MintService = new MintService(driver);
-    //         const output: void | Error = await mintService.createCardBox( data, base64, cardFields, uploader, packAddress);
-
-    //     return({ success: true, message: "Card box creation successful" });
-    //     } catch (error) {
-    //         console.error('Error creating card:', error);
-    //         return({ success: false, error });
-    //     }
-    // });
 
 
 };

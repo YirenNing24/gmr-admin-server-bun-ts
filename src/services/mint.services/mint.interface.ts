@@ -266,34 +266,6 @@ export interface MintedUpgradeItemMetadata {
 }
 
 
-/**
- * Represents data about a card pack.
- * @interface
- * @property {string} contents - The contents of the card box.
- * @property {string} description - The description of the card box.
- * @property {string} name - The name of the card box.
- * @property {string} openStartTime - The start time for opening the card box.
- * @property {string} quantity - The quantity of the card box.
- * @property {string} quantityPerReward - The quantity per reward associated with the card box.
- * @property {string} rewardsPerPack - The rewards per pack of the card box.
- * @property {string} token - The token associated with the card box.
- * @property {string} totalRewards - The total number of rewards associated with the card box.
- * @property {string} type - The type of the card box.
- */
-export interface CardPackData {
-    
-
-    name: string;
-    description: string;
-    contents: string;
-    openStartTime: string;
-    type: string;
-    tokenField: TokenField
-    cardField: CardField[];
-    rewardsPerPack: string;
-    imageByte: string;
-}
-
 export interface TokenField {
     token: string;
     quantity: string;
@@ -318,4 +290,13 @@ export interface CardField {
     quantityPerReward: string;
     totalRewards: string;
     assetContract: string;
+}
+
+
+
+export interface CreatePack {
+    imageByte: string;
+    name: string;
+    description: string;
+    supply: number;
 }

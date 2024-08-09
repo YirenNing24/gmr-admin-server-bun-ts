@@ -1,3 +1,4 @@
+
 interface CurrencyValuePerToken {
     name: string;
     symbol: string;
@@ -110,6 +111,25 @@ export interface MintedCardMetaData {
     supply: string;
 }
 
+export interface MintedPackMetaData {
+    quantityOwned?: string
+    owner: string;
+    metadata: PackMetadata;
+    type: string;
+    supply: string;
+}
+
+
+export interface  PackMetadata {
+    id: string;
+    name: string;
+    description: string;
+    image: string;
+    type: string;
+    uri: string;
+    owner: string;
+}
+
 
 
 export interface StoreCardUpgradeData {
@@ -136,3 +156,4 @@ export interface StoreCardUpgradeData {
     uploaderBeats: string;
     uri: string;
 }
+

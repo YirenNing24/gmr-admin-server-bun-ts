@@ -17,9 +17,12 @@ import ContractService from '../contract.services/contracts.service';
 
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
-import { CardPackData, CreateCard, MetadataWithSupply, MintedUpgradeItemMetadata, SuccessMessage, UpgradeItemData } from './mint.interface';
+import { CreateCard, CreatePack, MetadataWithSupply, MintedUpgradeItemMetadata, SuccessMessage, UpgradeItemData } from './mint.interface';
 import { Buffer } from "buffer";
-import { MintedCardMetaData } from '../stocks.services/stocks.interface';
+import { MintedCardMetaData, MintedPackMetaData } from '../stocks.services/stocks.interface';
+
+
+
 
 
 class MintService {
@@ -139,93 +142,69 @@ class MintService {
     }
 
 
-    public async createCardPack(token: string, cardPackData: CardPackData) {
-        const tokenService: TokenService = new TokenService();
-        const securityService: SecurityService = new SecurityService();
-    
+    public async createPack(token: string, createPack: CreatePack): Promise<SuccessMessage> {
         try {
+            const tokenService: TokenService = new TokenService();
+            const securityService: SecurityService = new SecurityService();
+            
             const username: string = await tokenService.verifyAccessToken(token);
             const access: string = await securityService.checkAccess(username);
-    
+            
             if (access !== "0" && access !== "1") {
-                throw new ValidationError(
-                    "Access Denied",
-                    "User does not have permission to create cards"
-                );
+                throw new ValidationError("Access Denied", "User does not have permission to create pack");
             }
-    
-            const { packAddress, editionAddress } = await this.retrieveContracts(
-                token
-            );
-    
-            if (!packAddress || !editionAddress) {
-                throw new Error("Contract addresses are undefined");
+            
+            const contractAddress = await this.retrieveContracts(token);
+            const { editionAddress } = contractAddress;
+            
+            if (!editionAddress) {
+                throw new Error("Edition address is undefined");
             }
-    
+            
             const storage: ThirdwebStorage = new ThirdwebStorage({
                 secretKey: SECRET_KEY,
             });
-    
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(
-                PRIVATE_KEY,
-                CHAIN,
-                {
-                    secretKey: SECRET_KEY,
-                }
-            );
-    
-            const buffer: Buffer = Buffer.from(JSON.parse(cardPackData.imageByte));
-            const [imageURI, packContract, editionContract] = await Promise.all([
+            
+            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
+                secretKey: SECRET_KEY,
+            });
+            
+            const { imageByte, ...metadata } = createPack;
+            
+            const byteImage: number[] = JSON.parse(imageByte);
+            const buffer: Buffer = Buffer.from(byteImage);
+            
+            const [imageURI, cardContract] = await Promise.all([
                 storage.upload(buffer),
-                sdk.getContract(packAddress, "pack"),
-                sdk.getContract(editionAddress, "edition"),
+                sdk.getContract(editionAddress, 'edition'),
             ]);
-    
-            // Set approval for the pack contract to manage editions
-            await editionContract.setApprovalForAll(packAddress, true);
-    
-            const erc1155Rewards = cardPackData.cardField.map((cardField) => ({
-                contractAddress: cardField.assetContract,
-                tokenId: cardField.tokenId,
-                quantityPerReward: cardField.quantityPerReward,
-                totalRewards: cardField.totalRewards,
-            }));
-    
-            const { name, description, type, openStartTime, rewardsPerPack } = cardPackData;
-            const { quantityPerReward, quantity, totalRewards } = cardPackData.tokenField
-    
-            const pack = {
-                packMetadata: {
-                    name,
-                    description,
+            
+            const supplyAmount: number = createPack.supply;
+            const metadataWithSupply = {
+                supply: supplyAmount,
+                metadata: {
+                    metadata,
                     image: imageURI,
-                    type,
-                },
-                erc20Rewards: [
-                    {
-                        contractAddress: token,
-                        quantityPerReward,
-                        quantity,
-                        totalRewards,
-                    },
-                ],
-                erc1155Rewards,
-                openStartTime: new Date(openStartTime),
-                rewardsPerPack,
-            };
-    
-            await packContract.create(pack);
+                    uploader: "beats"
+                }
+            }
 
-            const packs: NFT[] = await packContract.erc1155.getOwned();
+            
+            await cardContract.erc1155.mint(metadataWithSupply);
+            
+            const stocks = await cardContract.erc1155.getOwned() as unknown as MintedPackMetaData[];
 
-            this.savePackToMemgraph(username, packs);
-        } catch (error: any) {
-            throw new Error(`Failed to create card pack: ${error.message}`);
+            await this.savePackToMemgraph(username, stocks);
+            
+
+            return { success: "Pack mint is successful" } as SuccessMessage; 
+        } catch (error) {
+            throw error;
         }
     }
 
 
-    private async savePackToMemgraph(uploader: string, packs: NFT[]) {
+    private async savePackToMemgraph(uploader: string, packs: MintedPackMetaData[]) {
         for (const cardBox of packs) {
             const {
                 metadata: {
@@ -405,28 +384,6 @@ class MintService {
 
     }
 
-
-
-    public async createPack(token: string, createPack: any) {
-        try {
-
-        } catch(error: any) {
-            throw error
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
+}    
 
 export default  MintService

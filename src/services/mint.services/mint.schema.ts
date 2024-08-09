@@ -77,3 +77,15 @@ export const createUpgradeItemSchema ={
     })
 
 }
+
+
+export const createPackSchema ={
+    headers: t.Object({ authorization: t.String() }),
+    body: t.Object({ 
+        imageByte: t.String(),
+        name: t.String(),
+        description: t.String(),
+        supply: t.Number()
+    })
+
+}
