@@ -174,8 +174,11 @@ class StockService {
 
     
 
-    public async cardPackStock(): Promise<PackMetadata[]| Error> {
+    public async cardPackStock(token: string): Promise<PackMetadata[]| Error> {
         try {
+            const tokenService: TokenService = new TokenService();
+            await tokenService.verifyAccessToken(token);
+
             const session: Session = this.driver.session();
             const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
                 tx.run(cardPackStockAllCypher)

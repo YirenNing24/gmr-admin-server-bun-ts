@@ -14,6 +14,7 @@ import { populateCardListSchema } from "../services/stocks.services/stock.schema
 
 //** SCHEMA IMPORT
 import { PackMetadata, StoreCardUpgradeData } from "../services/stocks.services/stocks.interface";
+import { authorizationBearerSchema } from "../services/contract.services/contract.schema";
 
 
 const stocks = (app: Elysia<any, any>): void => {
@@ -102,7 +103,7 @@ const stocks = (app: Elysia<any, any>): void => {
     }
   })
 
-  
+
   .get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
     try {
       const driver = getDriver() as Driver
@@ -116,17 +117,26 @@ const stocks = (app: Elysia<any, any>): void => {
   })
 
 
-  .get('/admin/cardpacks/', async (): Promise<PackMetadata[]> => {
+  .get('/admin/cardpacks/', async ({ headers }): Promise<PackMetadata[]> => {
     try {
-      const driver = getDriver() as Driver
+
+      const authorizationHeader: string = headers.authorization;
+      if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+          throw new Error('Bearer token not found in Authorization header');
+      };
+
+      const jwtToken: string = authorizationHeader.substring(7);
+
+      const driver = getDriver() as Driver;
       const stockService: StockService = new StockService(driver);
-      const output: Error | PackMetadata[] = await stockService.cardPackStock()
+      const output: Error | PackMetadata[] = await stockService.cardPackStock(jwtToken);
       
-      return output as PackMetadata[]
+      return output as PackMetadata[];
     } catch (error: any) {
       return error;
     }
-  });
+    }, authorizationBearerSchema
+  );
 
 
 };
