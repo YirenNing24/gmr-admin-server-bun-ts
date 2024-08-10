@@ -32,6 +32,6 @@
     "neo4j-driver": "^5.23.0",
     "rethinkdb": "^2.4.2",
     "scrypt-js": "^3.0.1",
-    "thirdweb": "^5.44.1"
+    "thirdweb": "^5.45.0"
   }
 }

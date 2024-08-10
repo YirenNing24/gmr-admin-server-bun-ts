@@ -144,6 +144,9 @@ class MintService {
 
     public async createPack(token: string, createPack: CreatePack): Promise<SuccessMessage> {
         try {
+
+
+
             const tokenService: TokenService = new TokenService();
             const securityService: SecurityService = new SecurityService();
             
@@ -169,7 +172,8 @@ class MintService {
                 secretKey: SECRET_KEY,
             });
             
-            const { imageByte, ...metadata } = createPack;
+            const { imageByte, name, description, supply } = createPack;
+            console.log(name, description, supply)
             
             const byteImage: number[] = JSON.parse(imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
@@ -179,22 +183,23 @@ class MintService {
                 sdk.getContract(editionAddress, 'edition'),
             ]);
             
-            const supplyAmount: number = createPack.supply;
             const metadataWithSupply = {
-                supply: supplyAmount,
+                supply,
                 metadata: {
-                    metadata,
+                    name,
+                    description,
                     image: imageURI,
-                    uploader: "beats"
+                    uploader: "beats",
+                    type: "pack"
                 }
             }
 
             
-            await cardContract.erc1155.mint(metadataWithSupply);
-            
-            const stocks = await cardContract.erc1155.getOwned() as unknown as MintedPackMetaData[];
+            const result = await cardContract.erc1155.mint(metadataWithSupply); 
+            const packs = await cardContract.erc1155.get(result.id) as unknown as MintedPackMetaData;
 
-            await this.savePackToMemgraph(username, stocks);
+
+            await this.savePackToMemgraph(username, packs);
             
 
             return { success: "Pack mint is successful" } as SuccessMessage; 
@@ -204,65 +209,59 @@ class MintService {
     }
 
 
-    private async savePackToMemgraph(uploader: string, packs: MintedPackMetaData[]) {
-        for (const cardBox of packs) {
-            const {
-                metadata: {
-                    id,
-                    name,
-                    description,
-                    image,
-                    type,
-                    uri,
-                    owner
-                }
-            } = cardBox;
+    private async savePackToMemgraph(uploader: string, packs: MintedPackMetaData) {
+        console.log(packs)
 
-            const session: Session = this.driver.session();
-            // Create or update the Pack node in Neo4j
-            await session.executeWrite((tx) =>
-                tx.run(
+        const { id, name, description, image, type, uri } = packs.metadata;
+    
+        const session: Session = this.driver.session();
+        try {
+            await session.executeWrite(async (tx: ManagedTransaction) => {
+                await tx.run(
                     `
-                  MERGE (p:Pack {id: $id})
-                  ON CREATE SET
-                      p.description = $description,
-                      p.image = $image,
-                      p.name = $name,
-                      p.uri = $uri,
-                      p.owner = $owner,
-                      p.type = $type,
-                      p.uploader = $uploader
-                  RETURN p
-                  `, {
+                    MERGE (p:Pack {id: $id})
+                    ON CREATE SET
+                        p.description = $description,
+                        p.image = $image,
+                        p.name = $name,
+                        p.uri = $uri,
+
+                        p.type = $type,
+                        p.uploader = $uploader
+                    RETURN p
+                    `,
+                    {
                         id,
                         description,
                         image,
                         name,
                         uri,
-                        owner,
+                        owner: packs.owner,
                         type,
                         uploader
                     }
-                )
-            );
-
+                );
+            });
+    
             // Create a relationship between the Pack and uploader
-            await session.executeWrite((tx) =>
-                tx.run(
+            await session.executeWrite(async (tx: ManagedTransaction) => {
+                await tx.run(
                     `
-                  MATCH (p:Pack {id: $id})
-                  MATCH (u:User {username: $uploader})
-                  MERGE (p)-[:UPLOADED]->(u)
-                  `, {
+                    MATCH (p:Pack {id: $id})
+                    MATCH (u:User {username: $uploader})
+                    MERGE (p)-[:UPLOADED]->(u)
+                    `,
+                    {
                         id,
                         uploader
                     }
-                )
-            );
-
+                );
+            });
+        } finally {
             await session.close();
         }
     }
+    
 
 
     public async retrieveContracts(token: string): Promise<{editionAddress: string | undefined, cardItemUpgrade: string | undefined, packAddress: string | undefined}> {

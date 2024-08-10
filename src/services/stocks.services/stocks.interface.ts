@@ -127,7 +127,6 @@ export interface  PackMetadata {
     image: string;
     type: string;
     uri: string;
-    owner: string;
 }
 
 
