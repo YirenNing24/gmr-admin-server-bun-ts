@@ -70,4 +70,11 @@ export const cardUpgradeItemAllCypher: string = `
     RETURN c`;
 
 
-    
+/**
+ * Cypher query to retrieve all card packs in stock that are not listed and not transferred.
+ */
+export const cardPackStockAllCypher: string = `
+    MATCH (c:Pack) 
+    WHERE NOT EXISTS((c)-[:SOLD]->())
+    AND c.transferred IS NULL 
+    RETURN c`;

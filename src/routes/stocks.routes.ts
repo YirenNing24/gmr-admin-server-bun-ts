@@ -13,7 +13,7 @@ import { CardData, SuccessMessage } from "../services/mint.services/mint.interfa
 import { populateCardListSchema } from "../services/stocks.services/stock.schema";
 
 //** SCHEMA IMPORT
-import { StoreCardUpgradeData } from "../services/stocks.services/stocks.interface";
+import { PackMetadata, StoreCardUpgradeData } from "../services/stocks.services/stocks.interface";
 
 
 const stocks = (app: Elysia<any, any>): void => {
@@ -102,6 +102,7 @@ const stocks = (app: Elysia<any, any>): void => {
     }
   })
 
+  
   .get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
     try {
       const driver = getDriver() as Driver
@@ -114,13 +115,14 @@ const stocks = (app: Elysia<any, any>): void => {
     }
   })
 
-  .get('/admin/cardpacks/', async (): Promise<StoreCardUpgradeData[]> => {
+
+  .get('/admin/cardpacks/', async (): Promise<PackMetadata[]> => {
     try {
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);
-      const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock();
+      const output: Error | PackMetadata[] = await stockService.cardPackStock()
       
-      return output as StoreCardUpgradeData[]
+      return output as PackMetadata[]
     } catch (error: any) {
       return error;
     }

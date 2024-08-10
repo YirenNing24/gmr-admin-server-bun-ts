@@ -15,14 +15,15 @@ import { CHAIN, PRIVATE_KEY, SECRET_KEY } from '../../config/constants';
 import ListService from '../list.services/list.service';
 import TokenService from '../security.services/token.service';
 import AuthService from '../user.services/auth.service';
-import { CardsListedValid, MintedCardMetaData, StoreCardUpgradeData } from './stocks.interface';
+import { CardsListedValid, MintedCardMetaData, PackMetadata, StoreCardUpgradeData } from './stocks.interface';
 
 //** CYPHER IMPORT
 import {
-    cardListedCypher, cardSoldCypher, cardStockAllCypher,
+    cardListedCypher, cardPackStockAllCypher, cardSoldCypher, cardStockAllCypher,
     cardStockAllUnpacked, cardUpgradeItemAllCypher, saveCardListedCypher,
     saveCardValidCypher, saveCardValidCypherMerge
 } from './stock.cypher';
+import { CardPackData } from '../gacha.services/gacha.interface';
 
 
 
@@ -173,19 +174,17 @@ class StockService {
 
     
 
-    public async cardPackStock(): Promise<CardData[] | Error> {
+    public async cardPackStock(): Promise<PackMetadata[]| Error> {
         try {
             const session: Session = this.driver.session();
             const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(cardStockAllCypher)
+                tx.run(cardPackStockAllCypher)
             );
             await session.close();
 
-            const cards: CardData[] = result.records.map(record => record.get("c").properties);
+            const cardPacks: PackMetadata[] = result.records.map(record => record.get("c").properties);
 
-
-
-            return cards as CardData[];
+            return cardPacks as PackMetadata[];
         } catch (error: any) {
             return error;
         }
