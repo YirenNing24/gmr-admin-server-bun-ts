@@ -27,10 +27,10 @@ const stocks = (app: Elysia<any, any>): void => {
     } catch (error: any) {
       return error
     }
-  });
+  })
 
 
-  app.get('/admin/card/listed', async (): Promise<CardData[] | Error> => {
+  .get('/admin/card/listed', async (): Promise<CardData[] | Error> => {
     try {
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
@@ -40,10 +40,10 @@ const stocks = (app: Elysia<any, any>): void => {
     } catch (error: any) {
       return error
     }
-  });
+  })
 
 
-  app.get('/admin/card/unpacked', async (): Promise<CardData[] | Error> => {
+  .get('/admin/card/unpacked', async (): Promise<CardData[] | Error> => {
     try {
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
@@ -53,10 +53,10 @@ const stocks = (app: Elysia<any, any>): void => {
     } catch (error: any) {
       return error
     }
-  });
+  })
 
 
-  app.get('/admin/card/sold', async (): Promise<CardData[] | Error> => {
+  .get('/admin/card/sold', async (): Promise<CardData[] | Error> => {
     try {
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
@@ -66,10 +66,10 @@ const stocks = (app: Elysia<any, any>): void => {
     } catch (error: any) {
       return error;
     }
-  });
+  })
 
 
-  app.post('/admin/card/populate-card-list', async ({ headers, body }): Promise<SuccessMessage> => {
+  .post('/admin/card/populate-card-list', async ({ headers, body }): Promise<SuccessMessage> => {
     try {
       const authorizationHeader: string = headers.authorization;
       if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -87,10 +87,34 @@ const stocks = (app: Elysia<any, any>): void => {
       return error;
     }
     }, populateCardListSchema
-  );
+  )
 
 
-  app.get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
+  .get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
+    try {
+      const driver = getDriver() as Driver
+      const stockService: StockService = new StockService(driver);
+      const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock();
+      
+      return output as StoreCardUpgradeData[]
+    } catch (error: any) {
+      return error;
+    }
+  })
+
+  .get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
+    try {
+      const driver = getDriver() as Driver
+      const stockService: StockService = new StockService(driver);
+      const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock();
+      
+      return output as StoreCardUpgradeData[]
+    } catch (error: any) {
+      return error;
+    }
+  })
+
+  .get('/admin/cardpacks/', async (): Promise<StoreCardUpgradeData[]> => {
     try {
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);

@@ -24,7 +24,9 @@ import {
     saveCardValidCypher, saveCardValidCypherMerge
 } from './stock.cypher';
 
-export default class StockService {
+
+
+class StockService {
     private driver: Driver;
 
     constructor(driver: Driver) {
@@ -88,7 +90,6 @@ export default class StockService {
             return error;
         }
     }
-    
 
     public async cardSold(): Promise<CardData[] | Error> {
         try {
@@ -110,7 +111,6 @@ export default class StockService {
         const listService: ListService = new ListService(this.driver);
         const authenticateService: AuthService = new AuthService();
         const tokenService: TokenService = new TokenService();
-
         try {
             // Retrieve contracts and SDK initialization
 
@@ -169,6 +169,38 @@ export default class StockService {
             throw error;
         }
     }
+
+
+    
+
+    public async cardPackStock(): Promise<CardData[] | Error> {
+        try {
+            const session: Session = this.driver.session();
+            const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+                tx.run(cardStockAllCypher)
+            );
+            await session.close();
+
+            const cards: CardData[] = result.records.map(record => record.get("c").properties);
+
+
+
+            return cards as CardData[];
+        } catch (error: any) {
+            return error;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     private async getImageByte(imageUri: string): Promise<string> {
         try {
@@ -280,3 +312,6 @@ export default class StockService {
     }
 
 }    
+
+
+export default StockService

@@ -144,9 +144,6 @@ class MintService {
 
     public async createPack(token: string, createPack: CreatePack): Promise<SuccessMessage> {
         try {
-
-
-
             const tokenService: TokenService = new TokenService();
             const securityService: SecurityService = new SecurityService();
             
@@ -210,12 +207,9 @@ class MintService {
 
 
     private async savePackToMemgraph(uploader: string, packs: MintedPackMetaData) {
-        console.log(packs)
-
-        const { id, name, description, image, type, uri } = packs.metadata;
-    
         const session: Session = this.driver.session();
         try {
+            const { id, name, description, image, type, uri } = packs.metadata;
             await session.executeWrite(async (tx: ManagedTransaction) => {
                 await tx.run(
                     `
