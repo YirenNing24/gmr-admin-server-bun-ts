@@ -24,7 +24,7 @@ import StockService from "../stocks.services/stocks.service";
 import ValidationError from "../../errors/validation.error";
 
 //** CYPHER IMPORT */
-import { removeListingCypher, saveCardUpgradeToDBCypher, saveListToDBCypher } from "./list.cypher";
+import { removeListingCypher, saveCardUpgradeToDBCypher, saveListToDBCypher, savePackListToDBCypher } from "./list.cypher";
 
 
 class ListService {
@@ -172,7 +172,7 @@ constructor(driver: Driver) {
         }
 
     
-    public async listCardPack(listing: ListingData, token: string): Promise<SuccessMessage | Error>  {
+    public async listCardPack(token: string, listing: ListingData): Promise<SuccessMessage | Error>  {
             const tokenService: TokenService = new TokenService;
                 try {
                     const lister: string = await tokenService.verifyAccessToken(token);
@@ -215,9 +215,9 @@ constructor(driver: Driver) {
     
                     const listingId: number = transaction.id.toNumber()
     
-                    await this.saveCardListToDB(lister, listing, listingId);
+                    await this.savePackListToDB(lister, listing, listingId);
     
-                    return { success: "Card listing is successful" } as SuccessMessage;
+                    return { success: "Card Pack listing is successful" } as SuccessMessage;
                 } catch (error: any) {
                     console.log(error)
                     throw error;
@@ -265,6 +265,21 @@ constructor(driver: Driver) {
         };
 
 
+    private async savePackListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
+            try {
+                const { tokenId } = listingDataSave;
+                const session: Session = this.driver.session();
+                await session.executeWrite((tx: ManagedTransaction) =>
+                    tx.run(savePackListToDBCypher,
+                        { tokenId, lister, listingDataSave, listingId }
+                    )
+                );
+                await session.close();
+            } catch(error: any) {
+                throw error;
+            }
+        };
+
 
     private async saveCardUpgradeListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
         try {
@@ -284,7 +299,7 @@ constructor(driver: Driver) {
 
     public async retrieveContracts(token: string): Promise<CardListingContracts> {
             const contractService = new ContractService();
-            const contracts = await contractService.getContracts(token);
+            const contracts: Contracts[] | Error = await contractService.getContracts(token);
         
             if (!Array.isArray(contracts) || contracts.length === 0) {
                 throw new Error("Contracts are not available or empty");
@@ -292,7 +307,7 @@ constructor(driver: Driver) {
         
             const [firstContract] = contracts;
             if (!firstContract) {
-                throw new Error("First contract is undefined");
+                throw new Error("Contracts are undefined");
             }
         
             const { 
@@ -301,8 +316,10 @@ constructor(driver: Driver) {
                 beatsAddress: beatsTokenAddress, 
                 cardMarketplaceUpgradeItemAddress: cardUpgradeItemMarketplaceAddress, 
                 cardItemUpgradeAddress: cardUpgradeItemAddress, 
-                bundleMarketplaceAddress: cardPackMarketplaceAddress 
-            } = firstContract;
+                bundleMarketplaceAddress: cardPackMarketplaceAddress,
+                bundleAddress: cardPackAddress,
+              
+            } = firstContract
         
             if (!marketplaceAddress) {
                 throw new Error("Card Marketplace address is undefined");
@@ -314,7 +331,8 @@ constructor(driver: Driver) {
                 beatsTokenAddress, 
                 cardUpgradeItemMarketplaceAddress, 
                 cardUpgradeItemAddress, 
-                cardPackMarketplaceAddress 
+                cardPackMarketplaceAddress,
+                cardPackAddress
             } as CardListingContracts;
         };
         

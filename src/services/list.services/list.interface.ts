@@ -102,8 +102,8 @@ export interface CardListingContracts {
     cardUpgradeItemMarketplaceAddress: string;
     cardUpgradeItemAddress: string;
 
-    cardPackAddress: string;
     cardPackMarketplaceAddress: string;
+    cardPackAddress: string
 
     beatsTokenAddress: string;
     gmrTokenAddress: string;

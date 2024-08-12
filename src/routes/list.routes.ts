@@ -16,7 +16,7 @@ import { authorizationBearerSchema } from '../services/contract.services/contrac
 
 
 const list = (app: Elysia): void => {
-    app.post('/admin/list/card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
+  app.post('/admin/list/card', async ({ headers, body }): Promise<SuccessMessage | Error> => {
         try {
             const authorizationHeader: string | undefined = headers.authorization;
             if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -34,9 +34,10 @@ const list = (app: Elysia): void => {
           throw error;
         }
       }, listCardSchema
-    );
+  )
 
-    app.get('/admin/card/remove-listing', async ({ headers }): Promise<SuccessMessage | Error> => {
+
+  .get('/admin/card/remove-listing', async ({ headers }): Promise<SuccessMessage | Error> => {
       try {
           const authorizationHeader: string | undefined = headers.authorization;
           if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -55,10 +56,10 @@ const list = (app: Elysia): void => {
         throw error;
       }
     }, authorizationBearerSchema
-  );
+  )
 
 
-  app.post('/admin/list/card-upgrade', async ({ headers, body }): Promise<SuccessMessage | Error> => {
+  .post('/admin/list/card-upgrade', async ({ headers, body }): Promise<SuccessMessage | Error> => {
     try {
         const authorizationHeader: string | undefined = headers.authorization;
         if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
@@ -77,7 +78,30 @@ const list = (app: Elysia): void => {
       throw error;
     }
   }, listCardSchema
-);
+  )
+
+  
+  .post('/admin/list/card-pack', async ({ headers, body }): Promise<SuccessMessage | Error> => {
+    try {
+        const authorizationHeader: string | undefined = headers.authorization;
+        if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+            throw new Error('Bearer token not found in Authorization header');
+        }
+        
+        const jwtToken: string = authorizationHeader.substring(7);
+        const driver: Driver = getDriver() as Driver;
+        const listService: ListService = new ListService(driver);
+        
+        const output: SuccessMessage | Error = await listService.listCardPack(jwtToken, body)
+        return output as SuccessMessage | Error;
+    } catch (error: any) {
+      console.log(error)
+      throw error;
+    }
+  }, listCardSchema
+  )
+
+
 
 
 };

@@ -26,3 +26,6 @@ export const listCardSchema = {
         endTime: t.String()
     })
 };
+
+
+

@@ -37,3 +37,13 @@ export const saveCardUpgradeToDBCypher: string = `
     SET c += $listingDataSave
     SET c.lister = $lister
     SET c.listingId = $listingId`;
+
+
+
+export const savePackListToDBCypher: string = `
+    MATCH (p:Pack {id: $tokenId})
+    MATCH (ps:PackStore)
+    CREATE (p)-[:LISTED]->(ps)
+    SET p += $listingDataSave
+    SET p.lister = $lister
+    SET p.listingId = $listingId`;

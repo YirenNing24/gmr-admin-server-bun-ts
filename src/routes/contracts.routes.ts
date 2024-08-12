@@ -26,9 +26,9 @@ const contracts = (app: Elysia): void => {
         } catch (error: any) {
             return error;
         }
-    }, updateContractSchema);
+    }, updateContractSchema)
 
-    app.get('/admin/contracts', async ({ headers }): Promise<Contracts[] | Error> => {
+    .get('/admin/contracts', async ({ headers }): Promise<Contracts[] | Error> => {
         try {
             const authorizationHeader: string = headers.authorization;
             if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
