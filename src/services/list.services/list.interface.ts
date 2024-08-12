@@ -98,8 +98,13 @@ export interface List {
 export interface CardListingContracts { 
     marketplaceAddress: string;
     cardAssetAddress: string;
-    beatsTokenAddress: string;
-    gmrTokenAddress: string;
+
     cardUpgradeItemMarketplaceAddress: string;
     cardUpgradeItemAddress: string;
+
+    cardPackAddress: string;
+    cardPackMarketplaceAddress: string;
+
+    beatsTokenAddress: string;
+    gmrTokenAddress: string;
 }

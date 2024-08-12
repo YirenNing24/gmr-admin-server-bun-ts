@@ -119,7 +119,6 @@ constructor(driver: Driver) {
         };
 
 
-
     public async listCardUpgradeItem(token: string, upgradeItemListing: ListingData) {
         const tokenService: TokenService = new TokenService;
             try {
@@ -172,6 +171,60 @@ constructor(driver: Driver) {
             }
         }
 
+    
+    public async listCardPack(listing: ListingData, token: string): Promise<SuccessMessage | Error>  {
+            const tokenService: TokenService = new TokenService;
+                try {
+                    const lister: string = await tokenService.verifyAccessToken(token);
+    
+                    const contracts: CardListingContracts = await this.retrieveContracts(token);
+                    const { cardAssetAddress, cardPackMarketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts
+    
+                    const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
+                        secretKey: SECRET_KEY
+                    });
+    
+                    const { tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData
+    
+                    const startTimestamp: Date = new Date(startTime);
+                    const endTimestamp: Date = new Date(endTime);
+    
+                    let currencyContractAddress: string;
+                    if (currencyName === "$BEATS") {
+                        currencyContractAddress = beatsTokenAddress;
+                    } else if (currencyName === "$GMR") {
+                        currencyContractAddress = gmrTokenAddress;
+                    } else {
+                        throw new Error("Invalid currency name specified");
+                    }
+    
+                    const listingData = { 
+                        tokenId, 
+                        quantity, 
+                        isReservedListing: false, 
+                        pricePerToken, 
+                        endTimestamp, 
+                        startTimestamp, 
+                        assetContractAddress: cardAssetAddress, 
+                        currencyContractAddress
+                    };
+    
+                    // Create a listing on the marketplace
+                    const cardPackMarketplace: MarketplaceV3 = await sdk.getContract(cardPackMarketplaceAddress, 'marketplace-v3')
+                    const transaction: TransactionResultWithId = await cardPackMarketplace.directListings.createListing(listingData);
+    
+                    const listingId: number = transaction.id.toNumber()
+    
+                    await this.saveCardListToDB(lister, listing, listingId);
+    
+                    return { success: "Card listing is successful" } as SuccessMessage;
+                } catch (error: any) {
+                    console.log(error)
+                    throw error;
+                }
+        };
+
+
     public async cancelListCard(token: string, listingId: string): Promise<SuccessMessage | Error>  {
         const tokenService: TokenService = new TokenService;
 
@@ -194,6 +247,7 @@ constructor(driver: Driver) {
           throw error;
         }
         };
+
 
     private async saveCardListToDB(lister: string | undefined, listingDataSave: ListingData, listingId: number): Promise<void> {
         try {
@@ -225,36 +279,45 @@ constructor(driver: Driver) {
         } catch(error: any) {
             throw error;
         }
-    };
+        };
+
 
     public async retrieveContracts(token: string): Promise<CardListingContracts> {
-        const contractService: ContractService = new ContractService();
-        const contracts: Error | Contracts[] = await contractService.getContracts(token);
-
-        let marketplaceAddress: string | undefined;
-        let cardAssetAddress: string | undefined;
-        let beatsTokenAddress: string | undefined;
-        let cardUpgradeItemMarketplaceAddress : string | undefined;
-        let cardUpgradeItemAddress: string | undefined;
-
-        if (Array.isArray(contracts)) {
-            const [firstContract] = contracts;
-            if (firstContract) {
-                const { cardMarketplaceAddress, cardAddress, beatsAddress, gmrAddress, cardMarketplaceUpgradeItemAddress, cardItemUpgradeAddress } = firstContract as Contracts;
-                marketplaceAddress = cardMarketplaceAddress;
-                cardAssetAddress = cardAddress;
-                beatsTokenAddress = beatsAddress;
-                cardUpgradeItemMarketplaceAddress = cardMarketplaceUpgradeItemAddress;
-                cardUpgradeItemAddress = cardItemUpgradeAddress
+            const contractService = new ContractService();
+            const contracts = await contractService.getContracts(token);
+        
+            if (!Array.isArray(contracts) || contracts.length === 0) {
+                throw new Error("Contracts are not available or empty");
             }
+        
+            const [firstContract] = contracts;
+            if (!firstContract) {
+                throw new Error("First contract is undefined");
+            }
+        
+            const { 
+                cardMarketplaceAddress: marketplaceAddress, 
+                cardAddress: cardAssetAddress, 
+                beatsAddress: beatsTokenAddress, 
+                cardMarketplaceUpgradeItemAddress: cardUpgradeItemMarketplaceAddress, 
+                cardItemUpgradeAddress: cardUpgradeItemAddress, 
+                bundleMarketplaceAddress: cardPackMarketplaceAddress 
+            } = firstContract;
+        
+            if (!marketplaceAddress) {
+                throw new Error("Card Marketplace address is undefined");
+            }
+        
+            return { 
+                marketplaceAddress, 
+                cardAssetAddress, 
+                beatsTokenAddress, 
+                cardUpgradeItemMarketplaceAddress, 
+                cardUpgradeItemAddress, 
+                cardPackMarketplaceAddress 
+            } as CardListingContracts;
         };
-
-        if (!marketplaceAddress) {
-            throw new Error("Edition address is undefined");
-        };
-
-        return { marketplaceAddress, cardAssetAddress, beatsTokenAddress, cardUpgradeItemAddress, cardUpgradeItemMarketplaceAddress } as CardListingContracts
-        };
+        
 
 }
 
