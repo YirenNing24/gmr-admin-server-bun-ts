@@ -52,6 +52,7 @@ class StockService {
         }
     }
 
+
     public async cardStockUnpacked() {
         try {
             const session: Session = this.driver.session();
@@ -59,14 +60,18 @@ class StockService {
                 tx.run(cardStockAllUnpacked)
             );
             await session.close();
-
-            const cards: CardData[] = result.records.map(record => record.get("c").properties);
+    
+            const cards: CardData[] = result.records.map(record => {
+                const { imageByte, ...cardWithoutImage } = record.get("c").properties;
+                return cardWithoutImage;
+            });
 
             return cards as CardData[];
         } catch (error: any) {
             return error;
         }
     }
+    
 
     public async cardListed(): Promise<CardData[] | Error> {
         try {
@@ -92,6 +97,7 @@ class StockService {
         }
     }
 
+    
     public async cardSold(): Promise<CardData[] | Error> {
         try {
             const session: Session = this.driver.session();
@@ -171,8 +177,6 @@ class StockService {
         }
     }
 
-
-    
 
     public async cardPackStock(token: string): Promise<PackMetadata[]| Error> {
         try {

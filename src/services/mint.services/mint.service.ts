@@ -2,7 +2,7 @@
 import { Driver, Session, ManagedTransaction } from 'neo4j-driver-core'
 
 //** THIRDWEB IMPORTS */
-import { NFT, ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { NFT, ThirdwebSDK, TransactionResult, TransactionResultWithId } from "@thirdweb-dev/sdk";
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
 import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants';
 
@@ -78,11 +78,25 @@ class MintService {
                 }
             });
     
-            await cardContract.erc1155.mintBatch(metadataWithSupply);
-    
-            const stocks = await cardContract.erc1155.getOwned() as unknown as MintedCardMetaData[];
-    
-            await this.saveCardToMemgraph(stocks, editionAddress, username, imageByte);
+            const trans: TransactionResultWithId<NFT>[] = await cardContract.erc1155.mintBatch(metadataWithSupply);
+
+            let mintedCardArray: any[] = []; // Initialize an array to store card data
+
+            // Use map to create an array of promises, then use Promise.all to wait for all of them
+            await Promise.all(trans.map(async card => {
+                try {
+                    const cards = await cardContract.erc1155.get(card.id); // Fetch card data
+                    mintedCardArray.push(cards); // Push the fetched card data into the array
+                } catch (error) {
+                    console.error(`Failed to fetch card with id ${card.id}:`, error);
+                }
+            }));
+
+
+            
+            // Now, mintedCardArray should be fully populated
+            await this.saveCardToMemgraph(mintedCardArray, editionAddress, username, imageByte);
+            
     
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
@@ -104,8 +118,14 @@ class MintService {
                         type
                     } = card;
     
+                    // Extract the nested metadata
+                    //@ts-ignore
+                    const { metadata: nestedMetadata, ...otherMetadata } = metadata;
+    
+                    // Combine all the necessary properties into the parameters object
                     const parameters = {
-                        ...metadata,
+                        ...otherMetadata,        // Spread the outer metadata key-value pairs
+                        ...nestedMetadata,       // Spread the nested metadata key-value pairs
                         editionAddress,
                         owner,
                         quantityOwned,
@@ -136,10 +156,11 @@ class MintService {
             });
             await session.close();
         } catch (error) {
-
             throw error;
         }
     }
+    
+    
 
 
     public async createPack(token: string, createPack: CreatePack): Promise<SuccessMessage> {
@@ -181,7 +202,7 @@ class MintService {
             ]);
             
             const metadataWithSupply = {
-                supply,
+                supply: 100,
                 metadata: {
                     name,
                     description,

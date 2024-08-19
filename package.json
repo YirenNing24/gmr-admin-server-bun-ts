@@ -24,7 +24,7 @@
     "cron": "^3.1.7",
     "crypto-random-string": "^5.0.0",
     "dotenv": "^16.4.5",
-    "elysia": "^1.1.5",
+    "elysia": "^1.1.6",
     "ethers": "^5.7.2",
     "fast-jwt": "^4.0.2",
     "lucky-item": "^2.0.2",
@@ -32,6 +32,6 @@
     "neo4j-driver": "^5.23.0",
     "rethinkdb": "^2.4.2",
     "scrypt-js": "^3.0.1",
-    "thirdweb": "^5.45.0"
+    "thirdweb": "^5.47.0"
   }
 }
