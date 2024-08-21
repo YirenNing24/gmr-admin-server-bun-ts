@@ -105,7 +105,7 @@ class MintService {
     }
 
 
-    private async saveCardToMemgraph(stocks: MintedCardMetaData[], editionAddress: string, uploaderBeats: string, imageByte: string) {
+    private async saveCardToMemgraph(stocks: MintedCardMetaData[], editionAddress: string, uploaderBeats: string, imageByte: string): Promise<void> {
         try {
             const session: Session = this.driver.session();
             await session.executeWrite(async (tx: ManagedTransaction) => {
@@ -160,8 +160,6 @@ class MintService {
         }
     }
     
-    
-
 
     public async createPack(token: string, createPack: CreatePack): Promise<SuccessMessage> {
         try {
@@ -227,7 +225,7 @@ class MintService {
     }
 
 
-    private async savePackToMemgraph(uploader: string, packs: MintedPackMetaData) {
+    private async savePackToMemgraph(uploader: string, packs: MintedPackMetaData): Promise<void> {
         const session: Session = this.driver.session();
         try {
             const { id, name, description, image, type, uri } = packs.metadata;
@@ -278,7 +276,6 @@ class MintService {
     }
     
 
-
     public async retrieveContracts(token: string): Promise<{editionAddress: string | undefined, cardItemUpgrade: string | undefined, packAddress: string | undefined}> {
         const contractService: ContractService = new ContractService();
         const contracts: Error | Contracts[] = await contractService.getContracts(token);
@@ -304,7 +301,7 @@ class MintService {
     }
 
 
-    public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData) {
+    public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData): Promise<SuccessMessage> {
         const tokenService: TokenService = new TokenService();
         const username: string = await tokenService.verifyAccessToken(token);
         try {
@@ -354,7 +351,7 @@ class MintService {
     }
 
 
-    private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,) {
+    private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,): Promise<void> {
         try {
             const session: Session = this.driver.session();
             await session.executeWrite(async (tx: ManagedTransaction) => {
@@ -397,6 +394,7 @@ class MintService {
         }
 
     }
+
 
 }    
 
