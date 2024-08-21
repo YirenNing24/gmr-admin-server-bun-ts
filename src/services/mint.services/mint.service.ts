@@ -1,11 +1,9 @@
-//**MEMGRAPH IMPORTs
+//**MEMGRAPH IMPORTS
 import { Driver, Session, ManagedTransaction } from 'neo4j-driver-core'
 
-//** THIRDWEB IMPORTS */
-import { NFT, ThirdwebSDK, TransactionResult, TransactionResultWithId } from "@thirdweb-dev/sdk";
+//** THIRDWEB IMPORTS
+import { NFT, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
 import { ThirdwebStorage } from "@thirdweb-dev/storage";
-import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants';
-
 
 //** VALIDATION ERROR IMPORT
 import ValidationError from '../../errors/validation.error';
@@ -18,11 +16,13 @@ import ContractService from '../contract.services/contracts.service';
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
 import { CreateCard, CreatePack, MetadataWithSupply, MintedUpgradeItemMetadata, SuccessMessage, UpgradeItemData } from './mint.interface';
-import { Buffer } from "buffer";
 import { MintedCardMetaData, MintedPackMetaData } from '../stocks.services/stocks.interface';
 
+//** BUFFER IMPORT
+import { Buffer } from "buffer";
 
-
+//** CONFIG IMPORTS
+import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants'
 
 
 class MintService {
