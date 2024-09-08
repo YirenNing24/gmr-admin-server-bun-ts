@@ -74,9 +74,10 @@ class AuthService {
             const connection: rt.Connection = await getRethinkDB();
 
             //@ts-ignore
-            const query: NewUser | null = await rt.db('admin')
+            const query: NewUser | null = await rt
+                .db('admin')
                 .table('users')
-                .filter({username})
+                .filter({ username })
                 .run(connection);
 
             if (query === null) {
