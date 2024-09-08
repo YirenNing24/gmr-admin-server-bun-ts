@@ -70,23 +70,25 @@ class AuthService {
         try {
             const connection: rt.Connection = await getRethinkDB();
     
-            // Fetch the user from the database
-            const query: NewUser[] = await rt.db('admin')
+            // Retrieve the user document
+            const cursor = await rt
+                .db('admin')
                 .table('users')
                 .filter({ username })
-                .limit(1)  // Ensure we only get one user
+                .limit(1)  // Ensure we only get one result
                 .run(connection);
     
-            // Check if user was found
-            if (query.length === 0) {
+            // Convert cursor to array and get the first item
+            const queryArray = await cursor.toArray();
+            const query: NewUser | null = queryArray.length > 0 ? queryArray[0] : null;
+    
+            if (query === null) {
                 throw new ValidationError('User not found', 'User not found');
             }
     
-            // Extract user details
-            const user: NewUser = query[0];
-            const { access, email, encryptedPassword, registeredAt, userId } = user;
-            
-            // Verify the password
+            const { access, email, encryptedPassword, registeredAt, userId } = query;
+    
+            // Compare passwords
             const correct: boolean = await compare(unencryptedPassword, encryptedPassword);
             if (!correct) {
                 throw new ValidationError('Incorrect password', 'Incorrect password');
@@ -96,7 +98,7 @@ class AuthService {
             const tokens: TokenScheme = await tokenService.generateTokens(username);
             const { refreshToken, accessToken } = tokens;
     
-            // Return User Details
+            // Return User Details 
             const safeProperties: UserProperties = {
                 admin: access,
                 userId,
@@ -125,6 +127,7 @@ class AuthService {
             return error;
         }
     }
+    
     
 }
 
