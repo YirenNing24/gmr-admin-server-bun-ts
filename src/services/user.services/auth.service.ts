@@ -68,34 +68,36 @@ class AuthService {
         }
     };
 
-    public async authenticate(userName: string, unencryptedPassword: string): Promise<AuthenticationResponse | Error> {
+    public async authenticate(username: string, unencryptedPassword: string): Promise<AuthenticationResponse | Error> {
         const tokenService: TokenService = new TokenService();
         try {
             const connection: rt.Connection = await getRethinkDB();
-            const query: object | null = await rt.db('admin')
+
+            //@ts-ignore
+            const query: NewUser | null = await rt.db('admin')
                 .table('users')
-                .get(userName)
+                .get(username)
                 .run(connection);
 
             if (query === null) {
                 throw new ValidationError('User not found', 'User not found');
             }
 
-            const { access, username, email, encryptedPassword, registeredAt, userId } = query as NewUser
+            const { access, email, encryptedPassword, registeredAt, userId } = query as NewUser
             
             const correct: boolean = await compare(unencryptedPassword, encryptedPassword);
             if (!correct) {
                  throw new ValidationError('Incorrect password', 'Incorrect password');
             }
 
-            const tokens: TokenScheme = await tokenService.generateTokens(userName);
+            const tokens: TokenScheme = await tokenService.generateTokens(username);
             const { refreshToken, accessToken } = tokens as TokenScheme
   
             // Return User Details 
             const safeProperties: UserProperties = {
                  admin: access,
                  userId,
-                 username,
+                 username: query.username,
                  email,
                  registeredAt,
                  refreshToken,

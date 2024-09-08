@@ -19,6 +19,8 @@ const auth = (app: Elysia): void => {
       try {
         const { username, password } = body as Authentication
 
+
+        
         const authService: AuthService = new AuthService()
         const output: AuthenticationResponse | Error = await authService.authenticate(username, password)
 
