@@ -4,26 +4,37 @@ import { getRethinkDB } from "../../db/rethink";
 
 //** INTERFACE IMPORTS
 import { NewUser } from "../user.services/interface";
+import ValidationError from '../../errors/validation.error';
 
 
 class SecurityService {
-    public async checkAccess(userName: string): Promise<string> {
+    public async checkAccess(username: string): Promise<string | Error> {
         try {
             const connection: rt.Connection = await getRethinkDB();
-
-            const query = await rt.db('admin')
+    
+            // Get the cursor for the query
+            const cursor = await rt.db('admin')
                 .table('users')
-                .get(userName)
+                .filter({ username })
                 .run(connection);
-
-            const { access } = query as NewUser;
-
-            return access as string
+    
+            // Get the first result from the cursor
+            const result = await cursor.next();
+    
+            if (!result) {
+                throw new ValidationError('User not found', 'User not found');
+            }
+    
+            // Extract the access property from the result
+            const { access } = result as NewUser;
+    
+            return access as string;
         } catch (error: any) {
-            console.log(error)
-          return error;
+            console.log(error);
+            return error;
         }
     }
+    
 }
 
 export default SecurityService;
