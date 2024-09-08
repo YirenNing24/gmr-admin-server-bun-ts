@@ -69,57 +69,63 @@ class AuthService {
         const tokenService: TokenService = new TokenService();
         try {
             const connection: rt.Connection = await getRethinkDB();
-
-            //@ts-ignore
-            const query: NewUser | null = await rt
-                .db('admin')
+    
+            // Fetch the user from the database
+            const query: NewUser[] = await rt.db('admin')
                 .table('users')
                 .filter({ username })
+                .limit(1)  // Ensure we only get one user
                 .run(connection);
-
-            if (query === null) {
+    
+            // Check if user was found
+            if (query.length === 0) {
                 throw new ValidationError('User not found', 'User not found');
             }
-
-            const { access, email, encryptedPassword, registeredAt, userId } = query as NewUser
+    
+            // Extract user details
+            const user: NewUser = query[0];
+            const { access, email, encryptedPassword, registeredAt, userId } = user;
             
+            // Verify the password
             const correct: boolean = await compare(unencryptedPassword, encryptedPassword);
             if (!correct) {
-                 throw new ValidationError('Incorrect password', 'Incorrect password');
+                throw new ValidationError('Incorrect password', 'Incorrect password');
             }
-
+    
+            // Generate tokens
             const tokens: TokenScheme = await tokenService.generateTokens(username);
-            const { refreshToken, accessToken } = tokens as TokenScheme
-  
-            // Return User Details 
+            const { refreshToken, accessToken } = tokens;
+    
+            // Return User Details
             const safeProperties: UserProperties = {
-                 admin: access,
-                 userId,
-                 username: query.username,
-                 email,
-                 registeredAt,
-                 refreshToken,
-                 accessToken,
+                admin: access,
+                userId,
+                username,
+                email,
+                registeredAt,
+                refreshToken,
+                accessToken,
             };
-
+    
+            // Optional: Uncomment if you want to use notifications
             // const notification: Notification = {
             //     username,
             //     eventType: "status",
-            //     eventDescription: `online`,
+            //     eventDescription: "online",
             //     success: true,
             //     errorMessage: "",
             //     blockchainTransactionId: ""
-            // }
-
-
-
-            return safeProperties  as AuthenticationResponse
+            // };
+            // await notificationService.insertNotification(notification);
+    
+            return safeProperties as AuthenticationResponse;
         } 
         catch (error: any) {
-        console.log(error)
-        return error
+            console.log(error);
+            return error;
         }
-    };
+    }
+    
 }
 
 export default AuthService
