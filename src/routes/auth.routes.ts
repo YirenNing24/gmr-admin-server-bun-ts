@@ -1,11 +1,11 @@
 //** ELYSIA IMPORT
 import Elysia from 'elysia';
 
-//** SCHEMA AND TYPE INTEFACE IMPORT
+//** SCHEMA AND TYPE INTERFACE IMPORT
 import { adminLoginSchema, adminRegistrationSchema } from "../services/user.services/auth.schema";
 import { authorizationBearerSchema } from '../services/contract.services/contract.schema';
 
-import { Authentication, AuthenticationResponse, UserRegistrationData } from "../services/user.services/interface";
+import { Authentication, AuthenticationResponse } from "../services/user.services/interface";
 import { TokenScheme } from '../services/user.services/user.service.interface';
 
 //** AUTH SERVICE IMPORT
@@ -20,7 +20,7 @@ const auth = (app: Elysia): void => {
         const { username, password } = body as Authentication
 
 
-        
+
         const authService: AuthService = new AuthService()
         const output: AuthenticationResponse | Error = await authService.authenticate(username, password)
 

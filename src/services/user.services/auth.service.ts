@@ -20,8 +20,6 @@ import { TokenScheme } from "./user.service.interface";
 
 //**  SERVICE IMPORTS
 import TokenService from "../security.services/token.service";
-import NotificationService from "../notification.services/notification.service";
-import { Notification } from "../notification.services/notification.interface";
 import { SuccessMessage } from "../mint.services/mint.interface";
 
 
@@ -29,7 +27,6 @@ class AuthService {
     public async register(userRegistrationData: UserRegistrationData, token: string): Promise<SuccessMessage> {
         try{
         const tokenService: TokenService = new TokenService();
-        // const notificationServce: NotificationService = new NotificationService();
         const userName: string = await tokenService.verifyAccessToken(token)
 
         if (userName !== "kaetaro13") {
@@ -60,7 +57,7 @@ class AuthService {
         // }
 
 
-        // await notificationServce.insertNotification(notification)
+
         return { success: "User successfully registered" }
         }
         catch(error: any) {
@@ -115,7 +112,7 @@ class AuthService {
             // }
 
 
-            // await notificationServce.insertNotification(notification)
+
             return safeProperties  as AuthenticationResponse
         } 
         catch (error: any) {

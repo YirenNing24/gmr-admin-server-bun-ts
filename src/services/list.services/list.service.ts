@@ -16,7 +16,7 @@ import { CardListingContracts, Listing, ListingData, ListingDataSave } from "./l
 import { Contracts } from "../contract.services/contracts.interface";
 import { CardData, SuccessMessage } from "../mint.services/mint.interface";
 
-//** SERVICES IMORTS
+//** SERVICES IMPORTS
 import TokenService from "../security.services/token.service";
 import StockService from "../stocks.services/stocks.service";
 
@@ -164,7 +164,7 @@ constructor(driver: Driver) {
 
                 await this.saveCardUpgradeListToDB(lister, upgradeItemListing, listingId);
 
-                return { success: "Card upgrqade listing is successful" } as SuccessMessage;             
+                return { success: "Card upgrade listing is successful" } as SuccessMessage;             
             } catch(error: any) {
                 console.log(error)
                 throw error;
