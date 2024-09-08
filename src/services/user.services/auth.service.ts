@@ -80,6 +80,8 @@ class AuthService {
     
             // Convert cursor to array and get the first item
             const queryArray = await cursor.toArray();
+
+            console.log(queryArray)
             const query: NewUser | null = queryArray.length > 0 ? queryArray[0] : null;
     
             if (query === null) {
