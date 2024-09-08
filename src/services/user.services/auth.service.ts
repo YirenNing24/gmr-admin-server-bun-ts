@@ -116,6 +116,7 @@ class AuthService {
             return safeProperties  as AuthenticationResponse
         } 
         catch (error: any) {
+        console.log(error)
         return error
         }
     };
