@@ -37,7 +37,7 @@ class MintService {
         const securityService: SecurityService = new SecurityService();
     
         const username: string = await tokenService.verifyAccessToken(token);
-        const access: string = await securityService.checkAccess(username);
+        const access: string | Error = await securityService.checkAccess(username);
     
         try {
             if (access !== "0" && access !== "1") {
@@ -100,6 +100,7 @@ class MintService {
     
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
+            console.log(error)
             throw error;
         }
     }
@@ -167,7 +168,7 @@ class MintService {
             const securityService: SecurityService = new SecurityService();
             
             const username: string = await tokenService.verifyAccessToken(token);
-            const access: string = await securityService.checkAccess(username);
+            const access: string | Error = await securityService.checkAccess(username);
             
             if (access !== "0" && access !== "1") {
                 throw new ValidationError("Access Denied", "User does not have permission to create pack");
