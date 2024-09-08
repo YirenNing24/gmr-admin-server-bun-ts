@@ -95,7 +95,7 @@ class MintService {
 
             
             // Now, mintedCardArray should be fully populated
-            await this.saveCardToMemgraph(mintedCardArray, editionAddress, username, imageByte);
+            await this.saveCardToMemgraph(mintedCardArray, editionAddress, username);
             
     
             return { success: "Card mint is successful" } as SuccessMessage;
@@ -106,7 +106,7 @@ class MintService {
     }
 
 
-    private async saveCardToMemgraph(stocks: MintedCardMetaData[], editionAddress: string, uploaderBeats: string, imageByte: string): Promise<void> {
+    private async saveCardToMemgraph(stocks: MintedCardMetaData[], editionAddress: string, uploaderBeats: string, ): Promise<void> {
         try {
             const session: Session = this.driver.session();
             await session.executeWrite(async (tx: ManagedTransaction) => {
@@ -133,7 +133,6 @@ class MintService {
                         supply,
                         type,
                         uploaderBeats,
-                        imageByte,
                         skillEquipped: false
                     };
     
@@ -190,7 +189,7 @@ class MintService {
             });
             
             const { imageByte, name, description, supply } = createPack;
-            console.log(name, description, supply)
+         
             
             const byteImage: number[] = JSON.parse(imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
@@ -201,7 +200,7 @@ class MintService {
             ]);
             
             const metadataWithSupply = {
-                supply: 100,
+                supply,
                 metadata: {
                     name,
                     description,
