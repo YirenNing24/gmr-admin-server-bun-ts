@@ -76,7 +76,7 @@ class AuthService {
             //@ts-ignore
             const query: NewUser | null = await rt.db('admin')
                 .table('users')
-                .get(username)
+                .filter({username})
                 .run(connection);
 
             if (query === null) {
