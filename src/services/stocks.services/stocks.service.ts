@@ -41,16 +41,19 @@ class StockService {
                 tx.run(cardStockAllCypher)
             );
             await session.close();
-
-            const cards: CardData[] = result.records.map(record => record.get("c").properties);
-
-
-
-            return cards as CardData[];
+    
+            const cards: CardData[] = result.records.map(record => {
+                const cardProps = record.get("c").properties;
+                const { imageByte, ...cardProprties } = cardProps; // Exclude imageByte
+                return cardProprties as CardData;
+            });
+    
+            return cards;
         } catch (error: any) {
             return error;
         }
     }
+    
 
 
     public async cardStockUnpacked() {
