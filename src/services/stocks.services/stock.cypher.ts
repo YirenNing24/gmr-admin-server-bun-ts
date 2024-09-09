@@ -5,9 +5,13 @@
 export const cardStockAllCypher: string = `
     MATCH (c:Card) 
     WHERE NOT EXISTS((c)-[:SOLD]->())
-    
     AND c.transferred IS NULL 
-    RETURN c`;
+    RETURN c {
+        .*,
+        imageByte: NULL
+    } AS c
+`;
+
 
 /**
  * Cypher query to retrieve all cards in stock that are not listed and not transferred.
