@@ -50,6 +50,7 @@ class StockService {
     
             return cards;
         } catch (error: any) {
+            console.log(error)
             return error;
         }
     }
