@@ -23,7 +23,7 @@ class GachaService {
             const securityService: SecurityService = new SecurityService();
         
             const username: string = await tokenService.verifyAccessToken(token);
-            const access: string = await securityService.checkAccess(username);
+            const access: string | Error = await securityService.checkAccess(username);
         
             if (access !== "0" && access !== "1") {
                 return new ValidationError("Access Denied", "User does not have permission to create packs");
@@ -51,7 +51,7 @@ class GachaService {
             const securityService: SecurityService = new SecurityService();
             
             const username: string = await tokenService.verifyAccessToken(token);
-            const access: string = await securityService.checkAccess(username);
+            const access: string | Error = await securityService.checkAccess(username);
             
             if (access !== "0" && access !== "1") {
                 return new ValidationError("Access Denied", "User does not have permission to view packs");
@@ -83,7 +83,7 @@ class GachaService {
             const securityService: SecurityService = new SecurityService();
         
             const username: string = await tokenService.verifyAccessToken(token);
-            const access: string = await securityService.checkAccess(username);
+            const access: string | Error = await securityService.checkAccess(username);
         
             if (access !== "0" && access !== "1") {
                 return new ValidationError("Access Denied", "User does not have permission to create packs");
