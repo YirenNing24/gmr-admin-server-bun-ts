@@ -44,8 +44,8 @@ class StockService {
     
             const cards: CardData[] = result.records.map(record => {
                 const cardProps = record.get("c").properties;
-                const { imageByte, ...cardProprties } = cardProps; // Exclude imageByte
-                return cardProprties as CardData;
+                const { imageByte, ...cardProperties } = cardProps; // Exclude imageByte
+                return cardProperties as CardData;
             });
     
             return cards;
