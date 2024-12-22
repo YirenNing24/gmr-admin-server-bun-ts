@@ -42,11 +42,13 @@ class StockService {
             );
             await session.close();
     
-            const cards: CardData[] = result.records.map(record => {
+            const cards: CardData[] = await result.records.map(record => {
                 const cardProps = record.get("c").properties;
                 const { imageByte, ...cardProperties } = cardProps; // Exclude imageByte
                 return cardProperties as CardData;
             });
+
+
     
             return cards;
         } catch (error: any) {

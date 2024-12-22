@@ -18,14 +18,17 @@ import { authorizationBearerSchema } from "../services/contract.services/contrac
 
 
 const stocks = (app: Elysia<any, any>): void => {
-  app.get('/admin/card/stock', async () => {
+  app.get('/admin/card/stock/', async (): Promise<CardData[] | Error> => {
     try {
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);
       const output: CardData[] | Error = await stockService.cardStock();
 
-      return output as CardData[] | Error
+      
+
+      return output
     } catch (error: any) {
+      console.log(error)
       return error
     }
   })
