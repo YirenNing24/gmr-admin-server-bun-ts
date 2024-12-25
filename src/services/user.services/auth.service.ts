@@ -1,9 +1,9 @@
 //** ERROR VALIDATION IMPORT
 import ValidationError from "../../errors/validation.error";
 
-//** RETHINKDB IMPORT
-import rt from 'rethinkdb';
-import { getRethinkDB } from "../../db/rethink";
+//** MONGO DB IMPORTS
+import { mongoDBClient } from '../../db/mongodb.client';
+import { MongoClient } from 'mongodb';
 
 //** CONFIG IMPORTS
 import { SALT_ROUNDS } from "../../config/constants";
@@ -25,6 +25,7 @@ import { SuccessMessage } from "../mint.services/mint.interface";
 
 class AuthService {
     public async register(userRegistrationData: UserRegistrationData, token: string): Promise<SuccessMessage> {
+        const client: MongoClient = await mongoDBClient.connect();
         try{
         const tokenService: TokenService = new TokenService();
         const userName: string = await tokenService.verifyAccessToken(token)
@@ -34,60 +35,41 @@ class AuthService {
         }
 
         const { access, username, email, password } = userRegistrationData as UserRegistrationData
-        const userId: string = nanoid()
-        const encryptedPassword: string = await hash(password, SALT_ROUNDS)
-        const registeredAt: number = Date.now()
+        const userId: string = nanoid();
+        const encryptedPassword: string = await hash(password, SALT_ROUNDS);
+        const registeredAt: number = Date.now();
 
         const newUser: NewUser = { access, username, email, encryptedPassword, registeredAt, userId }
 
-        const connection: rt.Connection = await getRethinkDB();
-        
-        await rt.db('admin')
-          .table('users')
-          .insert(newUser)
-          .run(connection);
+        const collection = client.db("admin").collection("users");
+        await collection.insertOne(newUser);
 
-        //   const notification: Notification = {
-        //     username,
-        //     eventType: "registration",
-        //     eventDescription: `${username} has been registered`,
-        //     success: true,
-        //     errorMessage: "",
-        //     blockchainTransactionId: ""
-        // }
-
-
-
-        return { success: "User successfully registered" }
+        return { success: "User successfully registered" };
         }
         catch(error: any) {
             throw error
+        } finally {
+            if (client) {
+                await client.close(); // Ensure the MongoDB client is closed
+            }
         }
     };
 
+
     public async authenticate(username: string, unencryptedPassword: string): Promise<AuthenticationResponse | Error> {
+        const client: MongoClient = await mongoDBClient.connect();
         const tokenService: TokenService = new TokenService();
         try {
-            const connection: rt.Connection = await getRethinkDB();
-    
-            // Retrieve the user document
-            const cursor = await rt
-                .db('admin')
-                .table('users')
-                .filter({ username })
-                .limit(1)  // Ensure we only get one result
-                .run(connection);
-    
-            // Convert cursor to array and get the first item
-            const queryArray = await cursor.toArray();
 
-            const query: NewUser | null = queryArray.length > 0 ? queryArray[0] : null;
+            const collection = client.db("admin").collection("users");
+            const result = await collection.findOne({ username }) as unknown as NewUser
+
     
-            if (query === null) {
+            if (result === null) {
                 throw new ValidationError('User not found', 'User not found');
             }
     
-            const { access, email, encryptedPassword, registeredAt, userId } = query;
+            const { access, email, encryptedPassword, registeredAt, userId } = result;
     
             // Compare passwords
             const correct: boolean = await compare(unencryptedPassword, encryptedPassword);
@@ -126,8 +108,12 @@ class AuthService {
         catch (error: any) {
             console.log(error);
             return error;
+        } finally {
+            if (client) {
+                await client.close(); // Ensure the MongoDB client is closed
+            }
         }
-    }
+    };
     
     
 }

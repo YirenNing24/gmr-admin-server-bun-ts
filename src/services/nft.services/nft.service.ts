@@ -30,7 +30,7 @@ class NFTService {
         const securityService: SecurityService = new SecurityService();
 
         const username: string = await tokenService.verifyAccessToken(token);
-        const access: string = await securityService.checkAccess(username);
+        const access: string | Error = await securityService.checkAccess(username);
         try {
             if (access !== "0" && access !== "1") {
                 return new ValidationError("Access Denied", "User doest not have  permission to create cards");

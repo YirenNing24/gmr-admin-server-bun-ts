@@ -2,7 +2,7 @@
 
 import { ArbitrumSepolia } from "@thirdweb-dev/chains";
 import { SmartWalletConfig } from "@thirdweb-dev/wallets";
-// import { ConnectionOptions } from 'rethinkdb';
+
 
 // Load config from .env file
 
@@ -27,7 +27,7 @@ export const RDB_PORT: number = Number(process.env.RDB_PORT) || 28015;
 export const KEYDB_PASSWORD: string | undefined = process.env.KEYDB_PASSWORD;
 export const KEYDB_PORT: string | undefined = process.env.KEYDB_PORT;
 export const KEYDB_HOST: string | undefined = process.env.KEYDB_HOST;
-export const ENGINE_URI: string = process.env.ENGINE_URI || "https://docker.gmetarave.com:3005";
+export const ENGINE_URI: string = process.env.ENGINE_URI || "";
 
 export const MONGO_HOST: string = process.env.MONGO_HOST || "";
 export const MONGO_TIMEOUT_MS: number = Number(process.env.MONGO_TIMEOUT_MS) || 20000;

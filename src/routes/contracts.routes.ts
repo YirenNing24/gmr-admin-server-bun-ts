@@ -7,6 +7,7 @@ import { Contracts } from '../services/contract.services/contracts.interface'
 
 //** VALIDATOR SCHEMA IMPORT
 import { authorizationBearerSchema, updateContractSchema } from '../services/contract.services/contract.schema';
+import { SuccessMessage } from '../services/mint.services/mint.interface';
 
 const contracts = (app: Elysia): void => {
     app.post('/admin/update-contracts', async ({ body, headers }): Promise<string | Error> => {
@@ -20,7 +21,7 @@ const contracts = (app: Elysia): void => {
             const contracts: Contracts = body as Contracts;
 
             const contractService: ContractService = new ContractService();
-            const output: string | Error = await contractService.updateContracts(jwtToken, contracts);
+            const output: SuccessMessage | Error = await contractService.updateContracts(jwtToken, contracts);
 
             return output as string | Error;
         } catch (error: any) {

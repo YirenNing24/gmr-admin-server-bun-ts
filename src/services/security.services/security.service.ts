@@ -1,6 +1,7 @@
-//** RETHINKDB IMPORT
-import rt from 'rethinkdb';
-import { getRethinkDB } from "../../db/rethink";
+//** MONGO DB IMPORTS
+import { mongoDBClient } from '../../db/mongodb.client';
+import { Collection, Document, MongoClient } from 'mongodb';
+
 
 //** INTERFACE IMPORTS
 import { NewUser } from "../user.services/interface";
@@ -9,22 +10,15 @@ import ValidationError from '../../errors/validation.error';
 
 class SecurityService {
     public async checkAccess(username: string): Promise<string | Error> {
+        const client: MongoClient = await mongoDBClient.connect();
         try {
-            const connection: rt.Connection = await getRethinkDB();
-    
-            // Get the cursor for the query
-            const cursor = await rt.db('admin')
-                .table('users')
-                .filter({ username })
-                .run(connection);
-    
-            // Get the first result from the cursor
-            const result = await cursor.next();
-    
+            const collection = client.db("admin").collection("users")
+            const result = await collection.findOne({username}) as unknown as NewUser;
+
             if (!result) {
                 throw new ValidationError('User not found', 'User not found');
             }
-    
+
             // Extract the access property from the result
             const { access } = result as NewUser;
     
@@ -32,6 +26,10 @@ class SecurityService {
         } catch (error: any) {
             console.log(error);
             return error;
+        } finally {
+            if (client) {
+                await client.close(); // Ensure the MongoDB client is closed
+            }
         }
     }
     
