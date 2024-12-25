@@ -22,7 +22,9 @@ import { MintedCardMetaData, MintedPackMetaData } from '../stocks.services/stock
 import { Buffer } from "buffer";
 
 //** CONFIG IMPORTS
-import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants'
+import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS } from '../../config/constants'
+import { createThirdwebClient } from 'thirdweb';
+import { engine, uploadImage } from '../utils.services/utils.service';
 
 
 class MintService {
@@ -46,58 +48,32 @@ class MintService {
     
             const contractAddress = await this.retrieveContracts(token);
             const { editionAddress } = contractAddress;
-    
             if (!editionAddress) {
                 throw new Error("Edition address is undefined");
             }
-    
-            const storage: ThirdwebStorage = new ThirdwebStorage({
-                secretKey: SECRET_KEY,
-            });
-    
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                secretKey: SECRET_KEY,
-            });
-    
+
             const { imageByte, ...metadata } = createCardData;
     
             const byteImage: number[] = JSON.parse(createCardData.imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
-            const [imageURI, cardContract] = await Promise.all([
-                storage.upload(buffer),
-                sdk.getContract(editionAddress, 'edition'),
-            ]);
-    
-            const supplyAmount: number = createCardData.supply;
-            const metadataWithSupply: MetadataWithSupply[] = Array(supplyAmount).fill({
-                supply: 1,
-                metadata: {
-                    metadata,
-                    image: imageURI,
-                    uploader: "beats"
-                }
-            });
-    
-            const trans: TransactionResultWithId<NFT>[] = await cardContract.erc1155.mintBatch(metadataWithSupply);
+            const imageUri: string = await uploadImage(buffer, metadata.name);
 
-            let mintedCardArray: any[] = []; // Initialize an array to store card data
+            const supply: number = createCardData.supply;
+            const metadataWithSupply = Array.from({ length: supply }, () => ({
+                metadata: { metadata, image: imageUri, uploader: "beats",},
+                supply: "1" })); // Each item has a supply of 1
 
-            // Use map to create an array of promises, then use Promise.all to wait for all of them
-            await Promise.all(trans.map(async card => {
-                try {
-                    const cards = await cardContract.erc1155.get(card.id); // Fetch card data
-                    mintedCardArray.push(cards); // Push the fetched card data into the array
-                } catch (error) {
-                    console.error(`Failed to fetch card with id ${card.id}:`, error);
-                }
-            }));
-
-
+            const requestBody = {
+                receiver: "0x6d2de42d71b6dC3bb02e0Ef465497bFCD2050287",
+                metadataWithSupply,
+            };
             
-            // Now, mintedCardArray should be fully populated
+            await engine.erc1155.mintBatchTo(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody, true);
+            const cards = await engine.erc1155.getAll(CHAIN, "0x31F90F18Cd93F11fC347362e9f8850E90176d4e5");
+            const mintedCardArray = cards.result
+
+            //@ts-ignore
             await this.saveCardToMemgraph(mintedCardArray, editionAddress, username);
-            
-    
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
             console.log(error)
@@ -174,50 +150,38 @@ class MintService {
             }
             
             const contractAddress = await this.retrieveContracts(token);
-            const { editionAddress } = contractAddress;
+            const { packAddress } = contractAddress;
             
-            if (!editionAddress) {
+            if (!packAddress) {
                 throw new Error("Edition address is undefined");
             }
-            
-            const storage: ThirdwebStorage = new ThirdwebStorage({
-                secretKey: SECRET_KEY,
-            });
-            
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                secretKey: SECRET_KEY,
-            });
-            
+              
             const { imageByte, name, description, supply } = createPack;
          
             
             const byteImage: number[] = JSON.parse(imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
-            
-            const [imageURI, cardContract] = await Promise.all([
-                storage.upload(buffer),
-                sdk.getContract(editionAddress, 'edition'),
-            ]);
-            
+
+            const imageUri: string = await uploadImage(buffer, name);
+
+            const supplyAmount: string = supply.toString();
             const metadataWithSupply = {
-                supply,
-                metadata: {
-                    name,
-                    description,
-                    image: imageURI,
-                    uploader: "beats",
-                    type: "pack"
-                }
+                metadata: { name, description, image: imageUri,uploader: "beats", type: "pack"
+                }, supply: supplyAmount
             }
 
-            
-            const result = await cardContract.erc1155.mint(metadataWithSupply); 
-            const packs = await cardContract.erc1155.get(result.id) as unknown as MintedPackMetaData;
+            const requestBody = {
+                receiver: "0x6d2de42d71b6dC3bb02e0Ef465497bFCD2050287",
+                metadataWithSupply,
+            };
 
+            await engine.erc1155.mintTo(CHAIN, packAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody, true);
 
-            await this.savePackToMemgraph(username, packs);
-            
+            const lastMintedPacks = await engine.erc1155.getAll(CHAIN, packAddress);
+            const mintedPacksresult: MintedPackMetaData[] = lastMintedPacks.result as unknown as MintedPackMetaData[];
+            const lastPacks: MintedPackMetaData  = mintedPacksresult.at(-1) as unknown as MintedPackMetaData ;
 
+            await this.savePackToMemgraph(username, lastPacks);
             return { success: "Pack mint is successful" } as SuccessMessage; 
         } catch (error) {
             throw error;
@@ -300,6 +264,9 @@ class MintService {
         return { editionAddress, cardItemUpgrade, packAddress }
     }
 
+
+
+    //NOT UPGRADED YET!!!
 
     public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData): Promise<SuccessMessage> {
         const tokenService: TokenService = new TokenService();

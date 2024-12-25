@@ -57,9 +57,3 @@ private driver: Driver;
     }
 
 }
-
-export const engine: Engine = new Engine({
-    url: ENGINE_URI,
-    accessToken: ENGINE_ACCESS_TOKEN,
-    
-  });

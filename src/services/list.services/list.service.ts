@@ -6,7 +6,7 @@ import { DirectListingV3, MarketplaceV3, ThirdwebSDK, TransactionResultWithId } 
 import { Driver, QueryResult, Session,  ManagedTransaction } from 'neo4j-driver-core'
 
 //** CONFIG IMPORTS
-import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants';
+import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS } from '../../config/constants';
 
 //** SERVICE IMPORTS
 import ContractService from "../contract.services/contracts.service";
@@ -25,6 +25,7 @@ import ValidationError from "../../errors/validation.error";
 
 //** CYPHER IMPORT */
 import { removeListingCypher, saveCardUpgradeToDBCypher, saveListToDBCypher, savePackListToDBCypher } from "./list.cypher";
+import { engine } from "../utils.services/utils.service";
 
 
 class ListService {
@@ -43,10 +44,6 @@ constructor(driver: Driver) {
                 const contracts: CardListingContracts = await this.retrieveContracts(token);
                 const { cardAssetAddress, marketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts
 
-                const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                    secretKey: SECRET_KEY
-                });
-
                 const { tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData
 
                 const startTimestamp: Date = new Date(startTime);
@@ -61,25 +58,31 @@ constructor(driver: Driver) {
                     throw new Error("Invalid currency name specified");
                 }
 
+                const quantityToString = `${quantity}`;
+                const priceToString = `${pricePerToken}`;
+                const [startTimestampToMS, endTimeStampToMS] = [startTimestamp, endTimestamp].map(ts => ts.getTime());
                 const listingData = { 
                     tokenId, 
-                    quantity, 
+                    quantity: quantityToString, 
                     isReservedListing: false, 
-                    pricePerToken, 
-                    endTimestamp, 
-                    startTimestamp, 
+                    pricePerToken: priceToString, 
+                    endTimestamp: endTimeStampToMS, 
+                    startTimestamp: startTimestampToMS, 
                     assetContractAddress: cardAssetAddress, 
                     currencyContractAddress
                 };
 
-                // Create a listing on the marketplace
-                const cardMarketplace: MarketplaceV3 = await sdk.getContract(marketplaceAddress, 'marketplace-v3')
-                const transaction: TransactionResultWithId = await cardMarketplace.directListings.createListing(listingData);
 
-                const listingId: number = transaction.id.toNumber()
+                await engine.marketplaceDirectListings.createListing(CHAIN, marketplaceAddress, ENGINE_ADMIN_WALLET_ADDRESS, listingData);
+
+                const cardListings = await engine.marketplaceDirectListings.getAll(CHAIN, marketplaceAddress)
+                const cardListingsArray = cardListings.result
+                const matchingListing = cardListingsArray.find(listing => listing.tokenId === listingData.tokenId);
+
+                const listingIdString: string = matchingListing?.id as string
+                const listingId: number = parseInt(listingIdString);
 
                 await this.saveCardListToDB(lister, listing, listingId);
-
                 return { success: "Card listing is successful" } as SuccessMessage;
             } catch (error: any) {
                 console.log(error)
@@ -180,10 +183,6 @@ constructor(driver: Driver) {
                     const contracts: CardListingContracts = await this.retrieveContracts(token);
                     const { cardAssetAddress, cardPackMarketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts
     
-                    const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                        secretKey: SECRET_KEY
-                    });
-    
                     const { tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData
     
                     const startTimestamp: Date = new Date(startTime);
@@ -197,26 +196,33 @@ constructor(driver: Driver) {
                     } else {
                         throw new Error("Invalid currency name specified");
                     }
+
+                    const quantityToString = `${quantity}`;
+                    const priceToString = `${pricePerToken}`;
+                    const [startTimestampToMS, endTimeStampToMS] = [startTimestamp, endTimestamp].map(ts => ts.getTime());
     
                     const listingData = { 
                         tokenId, 
-                        quantity, 
+                        quantity: quantityToString, 
                         isReservedListing: false, 
-                        pricePerToken, 
-                        endTimestamp, 
-                        startTimestamp, 
-                        assetContractAddress: cardAssetAddress, 
+                        pricePerToken: priceToString, 
+                        endTimestamp: endTimeStampToMS, 
+                        startTimestamp: startTimestampToMS, 
+                        assetContractAddress: cardAssetAddress,
                         currencyContractAddress
                     };
-    
+
                     // Create a listing on the marketplace
-                    const cardPackMarketplace: MarketplaceV3 = await sdk.getContract(cardPackMarketplaceAddress, 'marketplace-v3')
-                    const transaction: TransactionResultWithId = await cardPackMarketplace.directListings.createListing(listingData);
+                    await engine.marketplaceDirectListings.createListing(CHAIN, cardPackMarketplaceAddress, ENGINE_ADMIN_WALLET_ADDRESS, listingData);
+
+                    const cardPackListings = await engine.marketplaceDirectListings.getAll(CHAIN, cardPackMarketplaceAddress);
+                    const cardPackListingsArray = cardPackListings.result
+                    const matchingListing = cardPackListingsArray.find(listing => listing.tokenId === listingData.tokenId);
     
-                    const listingId: number = transaction.id.toNumber()
-    
+                    const listingIdString: string = matchingListing?.id as string
+                    const listingId: number = parseInt(listingIdString);
+
                     await this.savePackListToDB(lister, listing, listingId);
-    
                     return { success: "Card Pack listing is successful" } as SuccessMessage;
                 } catch (error: any) {
                     console.log(error)
