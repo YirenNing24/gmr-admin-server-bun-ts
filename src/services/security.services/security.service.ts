@@ -1,6 +1,6 @@
 //** MONGO DB IMPORTS
 import { mongoDBClient } from '../../db/mongodb.client';
-import { Collection, Document, MongoClient } from 'mongodb';
+import { MongoClient } from 'mongodb';
 
 
 //** INTERFACE IMPORTS
