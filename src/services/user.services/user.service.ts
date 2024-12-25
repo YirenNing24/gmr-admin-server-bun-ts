@@ -1,5 +1,7 @@
 import { Driver, QueryResult, Record } from "neo4j-driver";
 import ValidationError from "../../errors/validation.error";
+import { Engine } from "@thirdweb-dev/engine";
+import { ENGINE_ACCESS_TOKEN, ENGINE_URI } from "../../config/constants";
 
 export default class UserService {
 /**
@@ -7,18 +9,20 @@ export default class UserService {
  */
 private driver: Driver;
 
-/**
- * The constructor expects an instance of the Neo4j Driver, which will be
- * used to interact with Neo4j.
- *
- * @param {neo4j.Driver} driver
- */
-constructor(driver: Driver) {
-    this.driver = driver;
-  
-}
+    /**
+     * The constructor expects an instance of the Neo4j Driver, which will be
+     * used to interact with Neo4j.
+     *
+     * @param {neo4j.Driver} driver
+     */
+    constructor(driver: Driver) {
+        this.driver = driver;
+    
+    }
 
-    async getUserProfile(userName: string) {
+
+
+    public async getUserProfile(userName: string) {
         try {
             // Open a new session
             const session = this.driver.session();
@@ -52,7 +56,10 @@ constructor(driver: Driver) {
 
     }
 
-
-
-
 }
+
+export const engine: Engine = new Engine({
+    url: ENGINE_URI,
+    accessToken: ENGINE_ACCESS_TOKEN,
+    
+  });

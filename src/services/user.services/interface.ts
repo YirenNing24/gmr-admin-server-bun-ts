@@ -12,7 +12,6 @@ export interface AuthenticationResponse {
     registeredAt: number;
     refreshToken: string;
     accessToken: string;
-    
 }
 
 export interface UserProperties {
@@ -23,7 +22,6 @@ export interface UserProperties {
     registeredAt: number;
     refreshToken: string;
     accessToken: string;
-    
     
 }
 
