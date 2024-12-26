@@ -72,7 +72,7 @@ class GachaService {
             throw error
         } finally {
             if (client) {
-                await client.close(); // Ensure the MongoDB client is closed
+                await client.close();
             }
         }
     }
@@ -88,9 +88,14 @@ class GachaService {
         
             if (access !== "0" && access !== "1") {
                 return new ValidationError("Access Denied", "User does not have permission to create packs");
-            }
+            };
+
+
+
+
 
         } catch(error: any) {
+          console.log(error)
           throw error
         }
     }

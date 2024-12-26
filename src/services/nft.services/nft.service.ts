@@ -2,9 +2,8 @@
 import { Driver, Session, ManagedTransaction } from 'neo4j-driver-core'
 
 //** THIRDWEB IMPORTS */
-import { Edition, NFT, Pack, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
-import { ThirdwebStorage } from "@thirdweb-dev/storage";
-import { SECRET_KEY, PRIVATE_KEY, CHAIN } from '../../config/constants';
+
+import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS } from '../../config/constants';
 
 //** VALIDATION ERROR IMPORT
 import ValidationError from '../../errors/validation.error';
@@ -18,6 +17,7 @@ import ContractService from '../contract.services/contracts.service';
 import { Contracts } from '../contract.services/contracts.interface';
 import { SuccessMessage } from '../mint.services/mint.interface';
 import { CardTransferDetails } from './nft.interface';
+import { engine } from '../utils.services/utils.service';
 
 class NFTService {
     private driver: Driver;
@@ -25,39 +25,44 @@ class NFTService {
         this.driver = driver;
     }
 
-    public async transferCards(token: string, cardTransferDetails: CardTransferDetails): Promise < SuccessMessage | Error > {
-        const tokenService: TokenService = new TokenService();
-        const securityService: SecurityService = new SecurityService();
+    // public async transferCards(token: string, cardTransferDetails: CardTransferDetails): Promise < SuccessMessage | Error > {
+    //     const tokenService: TokenService = new TokenService();
+    //     const securityService: SecurityService = new SecurityService();
 
-        const username: string = await tokenService.verifyAccessToken(token);
-        const access: string | Error = await securityService.checkAccess(username);
-        try {
-            if (access !== "0" && access !== "1") {
-                return new ValidationError("Access Denied", "User doest not have  permission to create cards");
-            };
+    //     const username: string = await tokenService.verifyAccessToken(token);
+    //     const access: string | Error = await securityService.checkAccess(username);
+    //     try {
+    //         if (access !== "0" && access !== "1") {
+    //             return new ValidationError("Access Denied", "User doest not have  permission to create cards");
+    //         };
             
-            const editionAddress: string = await this.retrieveContracts(token)
-            if (!editionAddress) {
-                throw new Error("Edition address is undefined");
-            };
+    //         const editionAddress: string = await this.retrieveContracts(token)
+    //         if (!editionAddress) {
+    //             throw new Error("Edition address is undefined");
+    //         };
 
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                secretKey: SECRET_KEY,
-            });
+    //         const { toAddress, tokenIds, amounts, uris } = cardTransferDetails as CardTransferDetails
 
-            const [ cardContract ] = await Promise.all([ sdk.getContract(editionAddress, 'edition')]);
+            
 
-            const { toAddress, tokenIds, amounts, uris } = cardTransferDetails as CardTransferDetails
 
-            await cardContract.transferBatch(toAddress, tokenIds, amounts);
-            await this.addTransferredProp(uris, username, toAddress);
 
-            return { success: "Card Transfer is successful" } as SuccessMessage;
-        } catch (error: any) {
-            console.error(error)
-          throw error
-        }
-    };
+    //         const requestBody = {to: toAddress, tokenId: tokenIds,  }
+    //         await engine.erc1155.transfer(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, )
+
+    //         const [ cardContract ] = await Promise.all([ sdk.getContract(editionAddress, 'edition')]);
+
+
+
+    //         await cardContract.transferBatch(toAddress, tokenIds, amounts);
+    //         await this.addTransferredProp(uris, username, toAddress);
+
+    //         return { success: "Card Transfer is successful" } as SuccessMessage;
+    //     } catch (error: any) {
+    //         console.error(error)
+    //       throw error
+    //     }
+    // };
 
     public async retrieveContracts(token: string): Promise<string> {
         const contractService: ContractService = new ContractService();
@@ -79,25 +84,25 @@ class NFTService {
         return editionAddress
     };
 
-    private async addTransferredProp(uris: string[], username: string, walletAddress: string) {
-        try {
-            const session: Session = this.driver.session();
-            await session.executeWrite(async (tx: ManagedTransaction) => {
-                for (const uri of uris) {
-                    await tx.run(`
-                        MATCH (u:User {smartWalletAddress: $walletAddress})
-                        MATCH (c:Card {uri: $uri})
-                        MERGE (u)-[:OWNED]->(c)
-                        SET c.transferred = $username
-                    `, { walletAddress, uri, username });
-                }
-            });
-            await session.close();
-        } catch (error: any) {
-            console.error(error)
-            throw error
-        }
-    }
+    // private async addTransferredProp(uris: string[], username: string, walletAddress: string) {
+    //     try {
+    //         const session: Session = this.driver.session();
+    //         await session.executeWrite(async (tx: ManagedTransaction) => {
+    //             for (const uri of uris) {
+    //                 await tx.run(`
+    //                     MATCH (u:User {smartWalletAddress: $walletAddress})
+    //                     MATCH (c:Card {uri: $uri})
+    //                     MERGE (u)-[:OWNED]->(c)
+    //                     SET c.transferred = $username
+    //                 `, { walletAddress, uri, username });
+    //             }
+    //         });
+    //         await session.close();
+    //     } catch (error: any) {
+    //         console.error(error)
+    //         throw error
+    //     }
+    // }
     
 }
 

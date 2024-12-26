@@ -18,10 +18,6 @@ export const client = createThirdwebClient({
     accessToken: ENGINE_ACCESS_TOKEN,
   });
   
-
-
-
-
   export const uploadImage = async (imageBuffer: Buffer, name: string): Promise<string> => {
     try {
       // Upload the image to IPFS
