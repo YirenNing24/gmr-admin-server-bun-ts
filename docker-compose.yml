@@ -5,7 +5,7 @@ services:
     ports:
       - "127.0.0.1:9000:9000"  # Accessible only from the host
     env_file:
-      - ./env
+      - ./.env
     networks:
       - ann-network
     restart: always
