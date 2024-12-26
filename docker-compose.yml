@@ -10,4 +10,6 @@ services:
       - ann-network
     restart: always
 
-    
+networks:
+  ann-network:
+    driver: bridge
