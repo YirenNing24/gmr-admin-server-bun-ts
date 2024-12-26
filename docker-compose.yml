@@ -2,11 +2,12 @@ services:
   keydb:
     image: beats-admin
     container_name: beats-admin
-    command: keydb-server /etc/keydb/keydb.conf --requirepass ${KEYDB_PASSWORD} --server-threads 1
     ports:
-      - "127.0.0.1:900:9000"  # Accessible only from the host
+      - "127.0.0.1:9000:9000"  # Accessible only from the host
     env_file:
-      - ./.env
+      - ./env
     networks:
       - ann-network
     restart: always
+
+    
