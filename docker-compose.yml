@@ -1,6 +1,6 @@
 services:
   keydb:
-    image: beats-admin
+    image: kaetaro13/beats-admin
     container_name: beats-admin
     ports:
       - "127.0.0.1:9000:9000"  # Accessible only from the host
