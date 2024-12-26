@@ -100,7 +100,7 @@ constructor(driver: Driver) {
                 await tokenService.verifyAccessToken(token);
             }
     
-            const cards: CardData[] | Error = await stockService.cardListed();
+            const cards: CardData[] | Error = await stockService.cardListed(token);
             const session: Session = this.driver.session();
             for (const card of cards as CardData[]) {
                 if (card.endTime) {

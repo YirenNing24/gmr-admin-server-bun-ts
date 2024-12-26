@@ -90,10 +90,6 @@ class GachaService {
                 return new ValidationError("Access Denied", "User does not have permission to create packs");
             };
 
-
-
-
-
         } catch(error: any) {
           console.log(error)
           throw error

@@ -216,13 +216,14 @@ export interface CardData {
 
     quantity: 1
     listingId?: number;
-    quantityOwned: string
+    quantityOwned: string | undefined
     startTime?: string;
     endTime?: string;
     lister?: string;
     pricePerToken?: number
     currencyName?: string
     packed?: boolean
+    type?: string
   }
 
 /**

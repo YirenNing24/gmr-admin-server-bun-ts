@@ -18,33 +18,44 @@ import { authorizationBearerSchema } from "../services/contract.services/contrac
 
 
 const stocks = (app: Elysia<any, any>): void => {
-  app.get('/admin/card/stock/', async (): Promise<CardData[] | Error> => {
+  app.get('/admin/card/stock/', async ({ headers }): Promise<CardData[] | Error> => {
     try {
+      const authorizationHeader: string = headers.authorization;
+      if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+          throw new Error('Bearer token not found in Authorization header');
+      };
+      const jwtToken: string = authorizationHeader.substring(7);
+
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);
-      const output: CardData[] | Error = await stockService.cardStock();
-
-      
+      const output: CardData[] | Error = await stockService.cardStock(jwtToken);
 
       return output
     } catch (error: any) {
       console.log(error)
       return error
     }
-  })
+  }, authorizationBearerSchema
+)
 
 
-  .get('/admin/card/listed', async (): Promise<CardData[] | Error> => {
+  .get('/admin/card/listed', async ({ headers }): Promise<CardData[] | Error> => {
     try {
+      const authorizationHeader: string = headers.authorization;
+      if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+          throw new Error('Bearer token not found in Authorization header');
+      };
+      const jwtToken: string = authorizationHeader.substring(7);
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
-      const output: CardData[] | Error = await stockService.cardListed();
+      const output: CardData[] | Error = await stockService.cardListed(jwtToken);
       
       return output as CardData[] | Error
     } catch (error: any) {
       return error
     }
-  })
+  }, authorizationBearerSchema
+)
 
 
   .get('/admin/card/unpacked', async (): Promise<CardData[] | Error> => {
@@ -60,17 +71,23 @@ const stocks = (app: Elysia<any, any>): void => {
   })
 
 
-  .get('/admin/card/sold', async (): Promise<CardData[] | Error> => {
+  .get('/admin/card/sold', async ({ headers }): Promise<CardData[] | Error> => {
     try {
+      const authorizationHeader: string = headers.authorization;
+      if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+          throw new Error('Bearer token not found in Authorization header');
+      };
+      const jwtToken: string = authorizationHeader.substring(7);
       const driver = getDriver() as Driver
       const stockService = new StockService(driver);
-      const output: CardData[] | Error = await stockService.cardSold();
+      const output: CardData[] | Error = await stockService.cardSold(jwtToken);
       
       return output as CardData[] | Error
     } catch (error: any) {
       return error;
     }
-  })
+  }, authorizationBearerSchema
+)
 
 
   .post('/admin/card/populate-card-list', async ({ headers, body }): Promise<SuccessMessage> => {
@@ -94,30 +111,43 @@ const stocks = (app: Elysia<any, any>): void => {
   )
 
 
-  .get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
+  .get('/admin/upgrade/card-level', async ({ headers }): Promise<StoreCardUpgradeData[]> => {
     try {
+      const authorizationHeader: string = headers.authorization;
+      if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+          throw new Error('Bearer token not found in Authorization header');
+      };
+      const jwtToken: string = authorizationHeader.substring(7);
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);
-      const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock();
+      const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock(jwtToken);
       
       return output as StoreCardUpgradeData[]
     } catch (error: any) {
       return error;
     }
-  })
+  }, authorizationBearerSchema
+)
 
 
-  .get('/admin/upgrade/card-level', async (): Promise<StoreCardUpgradeData[]> => {
+  .get('/admin/upgrade/card-level', async ({ headers }): Promise<StoreCardUpgradeData[]> => {
     try {
+      const authorizationHeader: string = headers.authorization;
+      if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+          throw new Error('Bearer token not found in Authorization header');
+      };
+      const jwtToken: string = authorizationHeader.substring(7);
+      
       const driver = getDriver() as Driver
       const stockService: StockService = new StockService(driver);
-      const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock();
+      const output: StoreCardUpgradeData[] = await stockService.cardUpgradeItemStock(jwtToken);
       
       return output as StoreCardUpgradeData[]
     } catch (error: any) {
       return error;
     }
-  })
+  }, authorizationBearerSchema
+)
 
 
   .get('/admin/cardpacks/', async ({ headers }): Promise<PackMetadata[]> => {

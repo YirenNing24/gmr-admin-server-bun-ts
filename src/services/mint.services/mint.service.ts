@@ -22,7 +22,7 @@ import { MintedCardMetaData, MintedPackMetaData } from '../stocks.services/stock
 import { Buffer } from "buffer";
 
 //** CONFIG IMPORTS
-import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS } from '../../config/constants'
+import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS, TREASURY_WALLET } from '../../config/constants'
 import { createThirdwebClient } from 'thirdweb';
 import { engine, uploadImage } from '../utils.services/utils.service';
 
@@ -64,16 +64,16 @@ class MintService {
                 supply: "1" })); // Each item has a supply of 1
 
             const requestBody = {
-                receiver: "0x6d2de42d71b6dC3bb02e0Ef465497bFCD2050287",
+                receiver: TREASURY_WALLET,
                 metadataWithSupply,
             };
             
             await engine.erc1155.mintBatchTo(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody, true);
-            const cards = await engine.erc1155.getAll(CHAIN, "0x31F90F18Cd93F11fC347362e9f8850E90176d4e5");
+            const cards = await engine.erc1155.getAll(CHAIN, editionAddress);
             const mintedCardArray = cards.result
 
             //@ts-ignore
-            await this.saveCardToMemgraph(mintedCardArray, editionAddress, username);
+            this.saveCardToMemgraph(mintedCardArray, editionAddress, username);
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
             console.log(error)
@@ -171,7 +171,7 @@ class MintService {
             }
 
             const requestBody = {
-                receiver: "0x6d2de42d71b6dC3bb02e0Ef465497bFCD2050287",
+                receiver: TREASURY_WALLET,
                 metadataWithSupply,
             };
 
@@ -181,7 +181,7 @@ class MintService {
             const mintedPacksresult: MintedPackMetaData[] = lastMintedPacks.result as unknown as MintedPackMetaData[];
             const lastPacks: MintedPackMetaData  = mintedPacksresult.at(-1) as unknown as MintedPackMetaData ;
 
-            await this.savePackToMemgraph(username, lastPacks);
+            this.savePackToMemgraph(username, lastPacks);
             return { success: "Pack mint is successful" } as SuccessMessage; 
         } catch (error) {
             throw error;
@@ -268,99 +268,109 @@ class MintService {
 
     //NOT UPGRADED YET!!!
 
-    public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData): Promise<SuccessMessage> {
-        const tokenService: TokenService = new TokenService();
-        const username: string = await tokenService.verifyAccessToken(token);
-        try {
-            const contractAddress = await this.retrieveContracts(token)
-            const { cardItemUpgrade } = contractAddress
-            if (!cardItemUpgrade) {
-                throw new Error("Edition address is undefined");
-            };
-
-            const storage: ThirdwebStorage = new ThirdwebStorage({
-                secretKey: SECRET_KEY,
-            });
-
-            const sdk: ThirdwebSDK = ThirdwebSDK.fromPrivateKey(PRIVATE_KEY, CHAIN, {
-                secretKey: SECRET_KEY,
-            });
-
-            const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
-            const buffer: Buffer = Buffer.from(byteImage);
-            const [imageURI, cardUpgradeContract] = await Promise.all([
-                storage.upload(buffer),
-                sdk.getContract(cardItemUpgrade, "edition"),
-            ]);
-
-            const {imageByte, quantity, ...itemData } = upgradeItemData
-            const metadataWithSupply: MetadataWithSupply[] = Array(1).fill({
-                supply: quantity,
-                metadata: { 
-                    ...itemData, 
-                    image: imageURI,
-                    uploader: "beats"
-                }
-            });
-
-            await cardUpgradeContract.erc1155.mintBatch(metadataWithSupply);
-
-            //@ts-ignore
-            const stocks: MintedUpgradeItemMetadata[] = await cardUpgradeContract.erc1155.getOwned();
-            await this.saveUpgradeItemToMemgraph(stocks, cardItemUpgrade, username);
-
-            return { success: "Card item upgrade has been created"} as SuccessMessage
-        } catch(error: any) {
-            console.log(error);
-            throw error;
-
-        }
-    }
+    // public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData): Promise<SuccessMessage> {
+    //     const tokenService: TokenService = new TokenService();
+    //     const username: string = await tokenService.verifyAccessToken(token);
+    //     try {
+    //         const contractAddress = await this.retrieveContracts(token)
+    //         const { cardItemUpgrade } = contractAddress
+    //         if (!cardItemUpgrade) {
+    //             throw new Error("Edition address is undefined");
+    //         };
 
 
-    private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,): Promise<void> {
-        try {
-            const session: Session = this.driver.session();
-            await session.executeWrite(async (tx: ManagedTransaction) => {
-                for (const upgradeItem of stocks) {
-                    const { metadata, owner, quantityOwned, supply, type } = upgradeItem as MintedUpgradeItemMetadata
+
+    //         const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
+    //         const buffer: Buffer = Buffer.from(byteImage);
+
+    //         const imageUri = uploadImage(buffer, "Upgrade Item")
+
+
+
+
+    //         const {imageByte, quantity, ...metadata } = upgradeItemData
+    //         const namedMetada = {...metadata, name: }
+
+    //         // const stringQuantity: string = quantity.toString();
+    //         // const metadataWithSupply: MetadataWithSupply[] = Array(1).fill({
+    //         //     supply: stringQuantity,
+    //         //     metadata: { 
+    //         //         ...itemData, 
+    //         //         image: imageUri,
+    //         //         uploader: "beats"
+    //         //     }
+    //         // });
+
+
+    //         const metadataWithSupply = Array.from({ length: 1 }, () => ({
+    //             metadata: { metadata, image: imageUri, uploader: "beats",},
+    //             supply: "1" })); // Each item has a supply of 1
+
+
+
+    //         const requestBody = {
+    //             receiver: TREASURY_WALLET,
+    //             metadataWithSupply,
+    //         };
+
+    //         await engine.erc1155.mintBatchTo(CHAIN, cardItemUpgrade, ENGINE_ADMIN_WALLET_ADDRESS, requestBody)
+
+    //         //@ts-ignore
+    //         const stocks: MintedUpgradeItemMetadata[] = await cardUpgradeContract.erc1155.getOwned();
+    //         await this.saveUpgradeItemToMemgraph(stocks, cardItemUpgrade, username);
+
+    //         return { success: "Card item upgrade has been created"} as SuccessMessage
+    //     } catch(error: any) {
+    //         console.log(error);
+    //         throw error;
+
+    //     }
+    // }
+
+
+    // private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,): Promise<void> {
+    //     try {
+    //         const session: Session = this.driver.session();
+    //         await session.executeWrite(async (tx: ManagedTransaction) => {
+    //             for (const upgradeItem of stocks) {
+    //                 const { metadata, owner, quantityOwned, supply, type } = upgradeItem as MintedUpgradeItemMetadata
     
-                    const parameters = {
-                        ...metadata,
-                        editionAddress,
-                        owner,
-                        quantityOwned,
-                        supply,
-                        type,
-                        uploaderBeats,
-                        skillEquipped: false
-                    };
+    //                 const parameters = {
+    //                     ...metadata,
+    //                     editionAddress,
+    //                     owner,
+    //                     quantityOwned,
+    //                     supply,
+    //                     type,
+    //                     uploaderBeats,
+    //                     skillEquipped: false
+    //                 };
     
-                    await tx.run(
-                        `
-                        MERGE (c:CardUpgrade {id: $id})
-                        ON CREATE SET
-                            c += $parameters
-                        RETURN c
-                        `, { id: metadata.id, parameters }
-                    );
+    //                 await tx.run(
+    //                     `
+    //                     MERGE (c:CardUpgrade {id: $id})
+    //                     ON CREATE SET
+    //                         c += $parameters
+    //                     RETURN c
+    //                     `, { id: metadata.id, parameters }
+    //                 );
     
-                    await tx.run(
-                        `
-                        MATCH (p:Card {id: $id})
-                        MATCH (u:User {username: $uploader})
-                        MERGE (p)-[:UPLOADED]->(u)
-                        `, { id: metadata.id, uploader: owner }
-                    );
-                }
-            });
-            await session.close();
-        } catch (error: any) {
-            console.log(error)
-            throw error;
-        }
+    //                 await tx.run(
+    //                     `
+    //                     MATCH (p:Card {id: $id})
+    //                     MATCH (u:User {username: $uploader})
+    //                     MERGE (p)-[:UPLOADED]->(u)
+    //                     `, { id: metadata.id, uploader: owner }
+    //                 );
+    //             }
+    //         });
+    //         await session.close();
+    //     } catch (error: any) {
+    //         console.log(error)
+    //         throw error;
+    //     }
 
-    }
+    // }
 
 
 }    

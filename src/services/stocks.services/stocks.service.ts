@@ -7,9 +7,11 @@ import { Edition, MarketplaceV3, ThirdwebSDK } from '@thirdweb-dev/sdk';
 //** TYPE INTERFACE IMPORT
 import { CardListingContracts } from '../list.services/list.interface';
 import { CardData } from '../mint.services/mint.interface';
+import { Contracts } from '../contract.services/contracts.interface';
+
 
 //** CONFIGS IMPORT
-import { CHAIN, PRIVATE_KEY, SECRET_KEY } from '../../config/constants';
+import { CHAIN, PRIVATE_KEY, SECRET_KEY, TREASURY_WALLET } from '../../config/constants';
 
 //** SERVICE IMPORT
 import ListService from '../list.services/list.service';
@@ -24,6 +26,12 @@ import {
     saveCardValidCypher, saveCardValidCypherMerge
 } from './stock.cypher';
 
+import { engine } from '../utils.services/utils.service';
+
+
+
+
+
 
 
 
@@ -34,30 +42,38 @@ class StockService {
         this.driver = driver;
     }
 
-    public async cardStock(): Promise<CardData[] | Error> {
+
+    public async cardStock(token: string): Promise<CardData[] | Error> {
+        const tokenService: TokenService = new TokenService();
+        const listService: ListService = new ListService(this.driver);
+        
+
         try {
-            const session: Session = this.driver.session();
-            const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(cardStockAllCypher)
-            );
-            await session.close();
+            await tokenService.verifyAccessToken(token);
+            const contracts: CardListingContracts = await listService.retrieveContracts(token);
+            const { cardAssetAddress } = contracts
+            // const session: Session = this.driver.session();
+            // const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+            //     tx.run(cardStockAllCypher)
+            // );
+            // await session.close();
     
-            const cards: CardData[] = await result.records.map(record => {
-                const cardProps = record.get("c").properties;
-                const { imageByte, ...cardProperties } = cardProps; // Exclude imageByte
-                return cardProperties as CardData;
-            });
+            // const cards: CardData[] = await result.records.map(record => {
+            //     const cardProps = record.get("c").properties;
+            //     const { imageByte, ...cardProperties } = cardProps; // Exclude imageByte
+            //     return cardProperties as CardData;
+            // });
 
 
-    
-            return cards;
+            const cards = (await engine.erc1155.getOwned(TREASURY_WALLET, CHAIN, cardAssetAddress)).result as unknown
+
+            return cards as CardData[];
         } catch (error: any) {
             console.log(error)
             return error;
         }
     }
     
-
 
     public async cardStockUnpacked() {
         try {
@@ -79,46 +95,113 @@ class StockService {
     }
     
 
-    public async cardListed(): Promise<CardData[] | Error> {
+    // const session: Session = this.driver.session();
+    // const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+    //     tx.run(cardListedCypher)
+    // );
+
+    // await session.close();
+
+    // const currentDate = new Date();
+    // const cards: CardData[] = res.records
+    //     .map(record => record.get("c").properties)
+    //     .filter(card => {
+    //         const [month, day, year] = card.endTime.split('/');
+    //         const endTime = new Date(`20${year}-${month}-${day}`);
+    //         return endTime >= currentDate;
+    //     });
+    public async cardListed(token: string): Promise<CardData[] | Error> {
+        const listService: ListService = new ListService(this.driver);
+        const contracts: CardListingContracts = await listService.retrieveContracts(token);
+    
+        const { cardAssetAddress, marketplaceAddress } = contracts;
+    
         try {
-            const session: Session = this.driver.session();
-            const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(cardListedCypher)
-            );
+            // Fetch all valid listings
+            const listed = (await engine.marketplaceDirectListings.getAllValid(CHAIN, marketplaceAddress)).result;
     
-            await session.close();
+            // Prepare the final array of card data
+            const finalCardData: CardData[] = [];
     
-            const currentDate = new Date();
-            const cards: CardData[] = res.records
-                .map(record => record.get("c").properties)
-                .filter(card => {
-                    const [month, day, year] = card.endTime.split('/');
-                    const endTime = new Date(`20${year}-${month}-${day}`);
-                    return endTime >= currentDate;
-                });
+            // Iterate through listed tokenIds and fetch their metadata
+            for (const listing of listed) {
+                const tokenId: string = listing.tokenId;
     
-            return cards as CardData[];
+                // Fetch metadata for the current tokenId
+                const cardData = (await engine.erc1155.get(tokenId, CHAIN, cardAssetAddress)).result;
+    
+                // Combine tokenId and spread the metadata and cardData into a single object
+                //@ts-ignore
+                const card: CardData = {
+                    ...cardData.metadata, // Spread metadata key-value pairs
+                    tokenId, // Add tokenId
+                    owner: cardData.owner, // Add owner property
+                    type: cardData.type, // Add type property
+                    supply: cardData.supply, // Add supply property
+                    quantityOwned: cardData.quantityOwned, // Add quantityOwned property
+                };
+    
+                // Push the combined object to the final array
+                finalCardData.push(card);
+            }
+    
+            // Return the final array of card data
+            return finalCardData;
         } catch (error: any) {
+            console.error("Error in cardListed:", error.message);
             return error;
         }
     }
-
     
-    public async cardSold(): Promise<CardData[] | Error> {
+    
+    public async cardSold(token: string): Promise<CardData[] | Error> {
+        const listService: ListService = new ListService(this.driver);
+        const contracts: CardListingContracts = await listService.retrieveContracts(token);
+    
+        const { marketplaceAddress, cardAssetAddress } = contracts;
+    
         try {
-            const session: Session = this.driver.session();
-            const res: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(cardSoldCypher)
-            );
-            await session.close();
-
-            const cards: CardData[] = res.records.map(record => record.get("c").properties);
-
-            return cards as CardData[];
+            // Fetch all sold card listings
+            const soldCards = (await engine.marketplaceDirectListings.getAll(CHAIN, marketplaceAddress)).result;
+    
+            // Filter sold cards with status === 2
+            const filteredSoldCards = soldCards.filter(card => card.status === 2);
+    
+            // Prepare the final array of card data
+            const finalCardData: CardData[] = [];
+    
+            // Iterate through filtered sold cards and fetch their metadata
+            for (const soldCard of filteredSoldCards) {
+                const tokenId: string = soldCard.tokenId;
+    
+                // Fetch metadata for the current tokenId
+                const cardData = (await engine.erc1155.get(tokenId, CHAIN, cardAssetAddress)).result;
+    
+                // Combine tokenId and spread the metadata and cardData into a single object
+                
+                const card: CardData = {
+                    ...cardData.metadata, // Spread metadata key-value pairs
+                    tokenId, // Add tokenId
+                    owner: cardData.owner, // Add owner property
+                    type: cardData.type, // Add type property
+                    supply: cardData.supply, // Add supply property
+                    quantityOwned: cardData.quantityOwned, // Add quantityOwned property
+                    //@ts-ignore
+                    status: soldCard.status, // Include status from soldCards
+                };
+    
+                // Push the combined object to the final array
+                finalCardData.push(card);
+            }
+    
+            // Return the final array of sold card data
+            return finalCardData;
         } catch (error: any) {
+            console.error("Error in cardSold:", error.message);
             return error;
         }
     }
+    
 
     public async populateCardListFromContract(token: string, password: string) {
         const listService: ListService = new ListService(this.driver);
@@ -185,17 +268,21 @@ class StockService {
 
 
     public async cardPackStock(token: string): Promise<PackMetadata[]| Error> {
+        const listService: ListService = new ListService(this.driver);
+        const tokenService: TokenService = new TokenService();
         try {
-            const tokenService: TokenService = new TokenService();
             await tokenService.verifyAccessToken(token);
+            const contracts: CardListingContracts = await listService.retrieveContracts(token);
+            const { cardPackAddress } = contracts
+            // const session: Session = this.driver.session();
+            // const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+            //     tx.run(cardPackStockAllCypher)
+            // );
+            // await session.close();
 
-            const session: Session = this.driver.session();
-            const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(cardPackStockAllCypher)
-            );
-            await session.close();
+            // const cardPacks: PackMetadata[] = result.records.map(record => record.get("c").properties);
 
-            const cardPacks: PackMetadata[] = result.records.map(record => record.get("c").properties);
+            const cardPacks = await engine.erc1155.getOwned(TREASURY_WALLET, CHAIN, cardPackAddress) as unknown;
 
             return cardPacks as PackMetadata[];
         } catch (error: any) {
@@ -307,15 +394,22 @@ class StockService {
         }
     }
 
-    public async cardUpgradeItemStock(): Promise<StoreCardUpgradeData[]> {
+    public async cardUpgradeItemStock(token: string): Promise<StoreCardUpgradeData[]> {
+        const listService: ListService = new ListService(this.driver);
+        const tokenService: TokenService = new TokenService();
         try {
-            const session: Session = this.driver.session();
-            const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
-                tx.run(cardUpgradeItemAllCypher)
-            );
-            await session.close();
+            await tokenService.verifyAccessToken(token);
+            const contracts: CardListingContracts = await listService.retrieveContracts(token);
+            const { cardUpgradeItemAddress } = contracts
 
-            const cardUpgradeItem: StoreCardUpgradeData[] = result.records.map(record => record.get("c").properties);
+            // const session: Session = this.driver.session();
+            // const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
+            //     tx.run(cardUpgradeItemAllCypher)
+            // );
+            // await session.close();
+
+            // const cardUpgradeItem: StoreCardUpgradeData[] = result.records.map(record => record.get("c").properties);
+            const cardUpgradeItem = (await engine.erc1155.getOwned(TREASURY_WALLET, CHAIN, cardUpgradeItemAddress)).result as unknown;
 
             return cardUpgradeItem as StoreCardUpgradeData[];
         } catch (error: any) {
