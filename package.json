@@ -6,9 +6,11 @@
     "bun-types": "latest"
   },
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
+    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 bun run --watch src/index.ts",
     "start": "bun run src/index.ts"
   },
+
+  
   "peerDependencies": {
     "typescript": "^5.3.3"
   },
