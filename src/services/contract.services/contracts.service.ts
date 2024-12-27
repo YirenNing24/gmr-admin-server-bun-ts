@@ -35,8 +35,6 @@ class ContractService {
             // Insert contracts into the collection
 			await collection.insertOne(updatedContracts);
 
-            await mongoDBClient.close();
-    
             return { success: "Contracts address updated successfully" };
         } catch (error: any) {
             console.error("Error updating contracts:", error);
@@ -49,7 +47,6 @@ class ContractService {
     }
 
     public async getContracts(token: string): Promise<Contracts[]> {
-
         const client: MongoClient = await mongoDBClient.connect();
         try {
             const tokenService: TokenService = new TokenService();
@@ -62,7 +59,7 @@ class ContractService {
             const access: string | Error = await securityService.checkAccess(username);
             if (access !== "0" && access !== "1") {
                 throw new ValidationError("Access Denied", "User does not have permission to get the contracts");
-            }
+            };
 
             // Connect to MongoDB
             const collection: Collection<Document> = client.db("admin").collection("contracts");
@@ -76,9 +73,7 @@ class ContractService {
             console.error("Error getting contracts:", error.message);
             throw error;
         } finally {
-            if (client) {
-                await client.close(); // Ensure the MongoDB client is closed
-            }
+          await client.close(); // Ensure the MongoDB client is closed
         }
     }
 }
