@@ -286,7 +286,8 @@ class StockService {
 
             return cardPacks as PackMetadata[];
         } catch (error: any) {
-            return error;
+          console.log(error)
+          return error;
         }
     }
 
