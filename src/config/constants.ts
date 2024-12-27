@@ -4,7 +4,7 @@ import { Arbitrum, ArbitrumSepolia } from "@thirdweb-dev/chains";
 
 // API Configuration
 export const API_PREFIX: string = process.env.API_PREFIX || '/api';
-export const APP_PORT: number = Number(process.env.APP_PORT) || 8085;
+export const APP_PORT: number = Number(process.env.APP_PORT) || 9000;
 export const PORT: number = Number(process.env.PORT) || 8085;
 export const API_KEY: string | undefined = process.env.API_KEY;
 export const API_ID: string | undefined = process.env.API_ID;
