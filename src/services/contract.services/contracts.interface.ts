@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 /**
  * Represents the contracts information.
  * 
@@ -19,4 +21,5 @@ export interface Contracts {
     bundleMarketplaceAddress: string;
     cardItemUpgradeAddress: string;
     cardMarketplaceUpgradeItemAddress: string;
+    _id?: ObjectId;
 }
