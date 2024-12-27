@@ -41,14 +41,14 @@ class ContractService {
             throw error;
         } finally {
             if (client) {
-                await client.close(); // Ensure the MongoDB client is closed
+                await mongoDBClient.close();// Ensure the MongoDB client is closed
             }
         }
     }
 
     public async getContracts(token: string): Promise<Contracts[]> {
-        const client: MongoClient = await mongoDBClient.connect();
         try {
+            const client: MongoClient = await mongoDBClient.connect();
             const tokenService: TokenService = new TokenService();
             const securityService: SecurityService = new SecurityService();
 
@@ -73,7 +73,7 @@ class ContractService {
             console.error("Error getting contracts:", error.message);
             throw error;
         } finally {
-          await client.close(); // Ensure the MongoDB client is closed
+          await mongoDBClient.close();// Ensure the MongoDB client is closed
         }
     }
 }
