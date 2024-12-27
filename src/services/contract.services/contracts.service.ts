@@ -21,7 +21,6 @@ class ContractService {
             const tokenService: TokenService = new TokenService();
             const securityService: SecurityService = new SecurityService();
     
-            // Verify the token and check user access
             const username: string = await tokenService.verifyAccessToken(token);
             const access: string | Error = await securityService.checkAccess(username);
     
@@ -29,27 +28,23 @@ class ContractService {
                 return new ValidationError("Access Denied", "User does not have permission to update contracts");
             }
     
-            // Connect to MongoDB
             const client: MongoClient = await mongoDBClient.connect();
             const collection = client.db("admin").collection("contracts");
     
-            // Prepare updated data
-            const updatedContracts = { ...contracts, lastUpdate: Date.now(), updatedBy: username };
+            // Define the filter to find the contract to update
+            const filter = { _id: contracts._id }; // Assumes `contracts` has a unique `_id` property
     
-            // Update the existing document, or insert it if it doesn't exist
-            const result = await collection.updateOne(
-                { _id: contracts._id }, // Filter: match by unique identifier
-                { $set: updatedContracts }, // Update: apply changes
-                { upsert: true } // Option: insert if no match is found
-            );
+            // Define the update operation
+            const updatedContracts = {
+                ...contracts,
+                lastUpdate: Date.now(),
+                updatedBy: username,
+            };
     
-            if (result.matchedCount > 0) {
-                return { success: "Contracts address updated successfully" };
-            } else if (result.upsertedCount > 0) {
-                return { success: "Contracts address added successfully (new document inserted)" };
-            } else {
-                throw new Error("No changes were made to the database.");
-            }
+            // Use updateOne with upsert option
+            await collection.updateOne(filter, { $set: updatedContracts }, { upsert: true });
+    
+            return { success: "Contracts updated successfully" };
         } catch (error: any) {
             console.error("Error updating contracts:", error);
             throw error;
@@ -57,6 +52,7 @@ class ContractService {
             await mongoDBClient.close(); // Ensure the MongoDB client is closed
         }
     }
+    
     
 
     public async getContracts(token: string): Promise<Contracts[]> {
