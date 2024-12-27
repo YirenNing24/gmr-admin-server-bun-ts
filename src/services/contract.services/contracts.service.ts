@@ -17,7 +17,7 @@ import { SuccessMessage } from '../mint.services/mint.interface';
 class ContractService {
 
     public async updateContracts(token: string, contracts: Contracts): Promise<SuccessMessage| Error> {
-        const client: MongoClient = await mongoDBClient.connect();
+        
         try {
             const tokenService: TokenService = new TokenService();
             const securityService: SecurityService = new SecurityService();
@@ -28,7 +28,7 @@ class ContractService {
             if (access !== "0") {
                 return new ValidationError("Access Denied", "User does not have permission to update contracts");
             };
-    
+            const client: MongoClient = await mongoDBClient.connect();
             const collection = client.db("admin").collection("contracts")
             const updatedContracts = { ...contracts, lastUpdate: Date.now(), updatedBy: username };
 
@@ -46,7 +46,7 @@ class ContractService {
 
     public async getContracts(token: string): Promise<Contracts[]> {
         try {
-            const client: MongoClient = await mongoDBClient.connect();
+            
             const tokenService: TokenService = new TokenService();
             const securityService: SecurityService = new SecurityService();
 
@@ -60,6 +60,7 @@ class ContractService {
             };
 
             // Connect to MongoDB
+            const client: MongoClient = await mongoDBClient.connect();
             const collection: Collection<Document> = client.db("admin").collection("contracts");
 
             // Fetch contracts from the collection
