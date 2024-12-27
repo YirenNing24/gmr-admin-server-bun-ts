@@ -27,6 +27,8 @@ import {
 } from './stock.cypher';
 
 import { engine } from '../utils.services/utils.service';
+import ValidationError from '../../errors/validation.error';
+
 
 
 
@@ -274,6 +276,9 @@ class StockService {
             await tokenService.verifyAccessToken(token);
             const contracts: CardListingContracts = await listService.retrieveContracts(token);
             const { cardPackAddress } = contracts
+            if (cardPackAddress === null) {
+                throw new ValidationError("No card pack address found", "No card pack address found");
+            }
             // const session: Session = this.driver.session();
             // const result: QueryResult = await session.executeRead((tx: ManagedTransaction) =>
             //     tx.run(cardPackStockAllCypher)
