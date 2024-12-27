@@ -40,9 +40,7 @@ class ContractService {
             console.error("Error updating contracts:", error);
             throw error;
         } finally {
-            if (client) {
-                await mongoDBClient.close();// Ensure the MongoDB client is closed
-            }
+            await mongoDBClient.close();// Ensure the MongoDB client is closed
         }
     }
 
