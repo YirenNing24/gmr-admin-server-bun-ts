@@ -40,7 +40,7 @@ export const KDB: { host: string | undefined; port: string | number; password: s
 // Thirdweb SDK Configuration
 export const SECRET_KEY: string = process.env.SECRET_KEY || ""
 // Chain and Wallet Factory Configuration
-export const CHAIN: string  = Arbitrum.chainId.toString();
+export const CHAIN: string  = process.env.CHAIN || "33139";
 export const TEST_CHAIN: string  = ArbitrumSepolia.chainId.toString();
 
 // Contract Addresses
