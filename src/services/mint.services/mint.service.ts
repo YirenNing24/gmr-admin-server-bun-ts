@@ -67,13 +67,15 @@ class MintService {
                 receiver: TREASURY_WALLET,
                 metadataWithSupply,
             };
-            
-            await engine.erc1155.mintBatchTo(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody, true);
-            const cards = await engine.erc1155.getAll(CHAIN, editionAddress);
-            const mintedCardArray = cards.result
 
-            //@ts-ignore
-            this.saveCardToMemgraph(mintedCardArray, editionAddress, username);
+            console.log(requestBody)
+            
+            // await engine.erc1155.mintBatchTo(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody, true);
+            // const cards = await engine.erc1155.getAll(CHAIN, editionAddress);
+            // const mintedCardArray = cards.result
+
+            // //@ts-ignore
+            // this.saveCardToMemgraph(mintedCardArray, editionAddress, username);
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
             console.log(error)
