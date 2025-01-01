@@ -1,10 +1,6 @@
 //**MEMGRAPH IMPORTS
 import { Driver, Session, ManagedTransaction } from 'neo4j-driver-core'
 
-//** THIRDWEB IMPORTS
-import { NFT, ThirdwebSDK, TransactionResultWithId } from "@thirdweb-dev/sdk";
-import { ThirdwebStorage } from "@thirdweb-dev/storage";
-
 //** VALIDATION ERROR IMPORT
 import ValidationError from '../../errors/validation.error';
 
@@ -15,15 +11,16 @@ import ContractService from '../contract.services/contracts.service';
 
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
-import { CreateCard, CreatePack, MetadataWithSupply, MintedUpgradeItemMetadata, SuccessMessage, UpgradeItemData } from './mint.interface';
+import { CreateCard, CreatePack, SuccessMessage } from './mint.interface';
 import { MintedCardMetaData, MintedPackMetaData } from '../stocks.services/stocks.interface';
 
 //** BUFFER IMPORT
 import { Buffer } from "buffer";
 
 //** CONFIG IMPORTS
-import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS, TREASURY_WALLET } from '../../config/constants'
-import { createThirdwebClient } from 'thirdweb';
+import { CHAIN, ENGINE_ADMIN_WALLET_ADDRESS, TREASURY_WALLET } from '../../config/constants'
+
+//** THIRDWEB UTIL IMPORTS
 import { engine, uploadImage } from '../utils.services/utils.service';
 
 
@@ -60,7 +57,7 @@ class MintService {
 
             const supply: number = createCardData.supply;
             const metadataWithSupply = Array.from({ length: supply }, () => ({
-                metadata: { metadata, image: imageUri, uploader: "beats",},
+                metadata: { ...metadata, image: imageUri, uploader: "beats",},
                 supply: "1" })); // Each item has a supply of 1
 
             const requestBody = {
