@@ -36,59 +36,76 @@ constructor(driver: Driver) {
     this.driver = driver;
   
 }
-    public async listCard(listing: ListingData, token: string): Promise<SuccessMessage | Error>  {
-        const tokenService: TokenService = new TokenService;
-            try {
-                const lister: string = await tokenService.verifyAccessToken(token);
+    public async listCard(listing: ListingData, token: string): Promise<SuccessMessage | Error> {
+        const tokenService: TokenService = new TokenService();
 
-                const contracts: CardListingContracts = await this.retrieveContracts(token);
-                const { cardAssetAddress, marketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts
+        try {
+            const lister: string = await tokenService.verifyAccessToken(token);
 
-                const { tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData
+            const contracts: CardListingContracts = await this.retrieveContracts(token);
+            const { cardAssetAddress, marketplaceAddress, beatsTokenAddress, gmrTokenAddress } = contracts as CardListingContracts;
 
-                const startTimestamp: Date = new Date(startTime);
-                const endTimestamp: Date = new Date(endTime);
+            const { tokenId, quantity, pricePerToken, startTime, endTime, currencyName } = listing as ListingData;
 
-                let currencyContractAddress: string;
-                if (currencyName === "$BEATS") {
-                    currencyContractAddress = beatsTokenAddress;
-                } else if (currencyName === "$GMR") {
-                    currencyContractAddress = gmrTokenAddress;
-                } else {
-                    throw new Error("Invalid currency name specified");
-                }
+            const startTimestamp: Date = new Date(startTime);
+            const endTimestamp: Date = new Date(endTime);
 
-                const quantityToString = `${quantity}`;
-                const priceToString = `${pricePerToken}`;
-                const [startTimestampToMS, endTimeStampToMS] = [startTimestamp, endTimestamp].map(ts => ts.getTime());
-                const listingData = { 
-                    tokenId, 
-                    quantity: quantityToString, 
-                    isReservedListing: false, 
-                    pricePerToken: priceToString, 
-                    endTimestamp: endTimeStampToMS, 
-                    startTimestamp: startTimestampToMS, 
-                    assetContractAddress: cardAssetAddress, 
-                    currencyContractAddress
-                };
-
-
-                await engine.marketplaceDirectListings.createListing(CHAIN, marketplaceAddress, TREASURY_WALLET, listingData);
-
-                const cardListings = await engine.marketplaceDirectListings.getAll(CHAIN, marketplaceAddress)
-                const cardListingsArray = cardListings.result
-                const matchingListing = cardListingsArray.find(listing => listing.tokenId === listingData.tokenId);
-
-                const listingIdString: string = matchingListing?.id as string
-                const listingId: number = parseInt(listingIdString);
-
-                await this.saveCardListToDB(lister, listing, listingId);
-                return { success: "Card listing is successful" } as SuccessMessage;
-            } catch (error: any) {
-                console.log(error)
-                throw error;
+            let currencyContractAddress: string;
+            if (currencyName === "$BEATS") {
+                currencyContractAddress = beatsTokenAddress;
+            } else if (currencyName === "$GMR") {
+                currencyContractAddress = gmrTokenAddress;
+            } else {
+                throw new Error("Invalid currency name specified");
             }
-        };
+
+            const quantityToString = `${quantity}`;
+            const priceToString = `${pricePerToken}`;
+            const [startTimestampToMS, endTimeStampToMS] = [startTimestamp, endTimestamp].map(ts => ts.getTime());
+
+            const listingData = { 
+                tokenId, 
+                quantity: quantityToString, 
+                isReservedListing: false, 
+                pricePerToken: priceToString, 
+                endTimestamp: endTimeStampToMS, 
+                startTimestamp: startTimestampToMS, 
+                assetContractAddress: cardAssetAddress, 
+                currencyContractAddress
+            };
+
+            await engine.marketplaceDirectListings.createListing(CHAIN, marketplaceAddress, TREASURY_WALLET, listingData);
+
+            // Retry logic for fetching card listings
+            let cardListingsArray: any[] = [];
+            const maxRetries = 5;
+            const retryDelay = 2000; // 2 seconds delay between retries
+
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const cardListings = await engine.marketplaceDirectListings.getAllValid(CHAIN, marketplaceAddress);
+                    cardListingsArray = cardListings.result;
+                    break; // Exit the loop if successful
+                } catch (error: any) {
+                    console.log(`Attempt ${attempt} failed: ${error.message}`);
+                    if (attempt === maxRetries) throw new Error("Failed to fetch card listings after multiple attempts");
+                    await new Promise(res => setTimeout(res, retryDelay)); // Wait before retrying
+                }
+            }
+
+            const matchingListing = cardListingsArray.find(listing => listing.tokenId === listingData.tokenId);
+
+            const listingIdString: string = matchingListing?.id as string;
+            const listingId: number = parseInt(listingIdString);
+
+            await this.saveCardListToDB(lister, listing, listingId);
+            return { success: "Card listing is successful" } as SuccessMessage;
+        } catch (error: any) {
+            console.log(error);
+            throw error;
+        }
+    };
+
 
 
     public async removeListing(token: string, isCronJob: boolean = false) {
