@@ -59,8 +59,8 @@ constructor(driver: Driver) {
                 throw new Error("Invalid currency name specified");
             }
 
-            const quantityToString = `${quantity}`;
-            const priceToString = `${pricePerToken}`;
+            const quantityToString: string = `${quantity}`;
+            const priceToString: string = `${pricePerToken}`;
             const [startTimestampToMS, endTimeStampToMS] = [startTimestamp, endTimestamp].map(ts => ts.getTime());
 
             const listingData = { 
@@ -78,8 +78,8 @@ constructor(driver: Driver) {
 
             // Retry logic for fetching card listings
             let cardListingsArray: any[] = [];
-            const maxRetries = 5;
-            const retryDelay = 2000; // 2 seconds delay between retries
+            const maxRetries: number = 5;
+            const retryDelay: number = 2000; // 2 seconds delay between retries
 
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
