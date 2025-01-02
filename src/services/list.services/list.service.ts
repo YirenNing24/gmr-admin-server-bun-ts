@@ -6,7 +6,7 @@ import { DirectListingV3, MarketplaceV3, ThirdwebSDK, TransactionResultWithId } 
 import { Driver, QueryResult, Session,  ManagedTransaction } from 'neo4j-driver-core'
 
 //** CONFIG IMPORTS
-import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS } from '../../config/constants';
+import { SECRET_KEY, PRIVATE_KEY, CHAIN, ENGINE_ADMIN_WALLET_ADDRESS, TREASURY_WALLET } from '../../config/constants';
 
 //** SERVICE IMPORTS
 import ContractService from "../contract.services/contracts.service";
@@ -73,7 +73,7 @@ constructor(driver: Driver) {
                 };
 
 
-                await engine.marketplaceDirectListings.createListing(CHAIN, marketplaceAddress, ENGINE_ADMIN_WALLET_ADDRESS, listingData);
+                await engine.marketplaceDirectListings.createListing(CHAIN, marketplaceAddress, TREASURY_WALLET, listingData);
 
                 const cardListings = await engine.marketplaceDirectListings.getAll(CHAIN, marketplaceAddress)
                 const cardListingsArray = cardListings.result

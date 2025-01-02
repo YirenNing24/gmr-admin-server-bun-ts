@@ -57,8 +57,9 @@ class MintService {
 
             const supply: number = createCardData.supply;
             const metadataWithSupply = Array.from({ length: supply }, () => ({
-                metadata: { ...cardMetadata, image: imageUri },
-                supply: "1" })); // Each item has a supply of 1
+                metadata: { ...cardMetadata, image: imageUri, uploader: "beats" },
+                supply: "1" }
+            )); // Each item has a supply of 1
 
             const requestBody = {
                 receiver: TREASURY_WALLET,
