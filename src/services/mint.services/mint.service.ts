@@ -50,14 +50,15 @@ class MintService {
             }
 
             const { imageByte, ...metadata } = createCardData;
-    
+            const cardMetadata = metadata
             const byteImage: number[] = JSON.parse(createCardData.imageByte);
             const buffer: Buffer = Buffer.from(byteImage);
             const imageUri: string = await uploadImage(buffer, metadata.name);
 
             const supply: number = createCardData.supply;
             const metadataWithSupply = Array.from({ length: supply }, () => ({
-                metadata, image: imageUri, uploader: "beats",
+                metadata: { image: imageUri },
+                cardMetadata, uploader: "beats",
                 supply: "1" })); // Each item has a supply of 1
 
             const requestBody = {
