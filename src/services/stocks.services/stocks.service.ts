@@ -121,6 +121,9 @@ class StockService {
         try {
             // Fetch all valid listings
             const listed = (await engine.marketplaceDirectListings.getAllValid(CHAIN, marketplaceAddress)).result;
+
+
+            console.log("listed: ", listed)
     
             // Prepare the final array of card data
             const finalCardData: CardData[] = [];
@@ -131,6 +134,9 @@ class StockService {
     
                 // Fetch metadata for the current tokenId
                 const cardData = (await engine.erc1155.get(tokenId, CHAIN, cardAssetAddress)).result;
+
+
+                console.log("datacard: ", cardData)
     
                 // Combine tokenId and spread the metadata and cardData into a single object
                 //@ts-ignore
