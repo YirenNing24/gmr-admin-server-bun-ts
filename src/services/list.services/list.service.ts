@@ -68,8 +68,8 @@ constructor(driver: Driver) {
                 quantity: quantityToString, 
                 isReservedListing: false, 
                 pricePerToken: priceToString, 
-                endTimestamp: 0, 
-                startTimestamp: 0, 
+                endTimestamp: undefined, 
+                startTimestamp: undefined, 
                 assetContractAddress: cardAssetAddress, 
                 currencyContractAddress
             };
