@@ -126,7 +126,7 @@ class StockService {
             console.log("listed: ", listed)
     
             // Prepare the final array of card data
-            const finalCardData: CardData[] = [];
+            let finalCardData: any[] = [];
     
             // Iterate through listed tokenIds and fetch their metadata
             for (const listing of listed) {
@@ -150,7 +150,7 @@ class StockService {
                 };
     
                 // Push the combined object to the final array
-                finalCardData.push(card);
+                finalCardData.push(cardData);
             }
     
             // Return the final array of card data
