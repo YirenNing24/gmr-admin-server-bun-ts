@@ -75,7 +75,7 @@ constructor(driver: Driver) {
             };
 
             await engine.marketplaceDirectListings.createListing(CHAIN, marketplaceAddress, TREASURY_WALLET, listingData);
-            await engine.marketplaceDirectListings.updateListing
+
             // Retry logic for fetching card listings
             let cardListingsArray: any[] = [];
             const maxRetries: number = 5;
