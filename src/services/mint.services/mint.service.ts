@@ -66,7 +66,7 @@ class MintService {
                 metadataWithSupply,
             };
 
-             await engine.erc1155.mintBatchTo(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody, true);
+             await engine.erc1155.mintBatchTo(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody);
              const cards = await engine.erc1155.getAll(CHAIN, editionAddress);
              const mintedCardArray = cards.result
 
