@@ -134,7 +134,7 @@ class StockService {
     
                 // Fetch metadata for the current tokenId
                 const cardData = (await engine.erc1155.get(tokenId, CHAIN, cardAssetAddress)).result;
-
+                
 
                 console.log("datacard: ", cardData)
     

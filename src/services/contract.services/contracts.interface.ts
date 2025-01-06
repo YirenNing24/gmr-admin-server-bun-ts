@@ -11,6 +11,8 @@ import { ObjectId } from "mongodb";
  * @property {string} bundleAddress - The address of the Bundle contract.
  * @property {string} bundleMarketplaceAddress - The address of the Bundle Marketplace contract.
  * @property {string} cardItemUpgradeAddress - The address of the Card Item Upgrade contract.
+ * @property {string} cardMarketplaceUpgradeItemAddress - The address of the Card Marketplace Upgrade Item contract.
+ * @property {string} playerSoulAddress - The address of the Player Soul contract.
  */
 export interface Contracts {
     beatsAddress: string;
@@ -21,5 +23,6 @@ export interface Contracts {
     bundleMarketplaceAddress: string;
     cardItemUpgradeAddress: string;
     cardMarketplaceUpgradeItemAddress: string;
+    playerSoulAddress: string;
     _id?: ObjectId;
 }

@@ -14,7 +14,7 @@ export const client = createThirdwebClient({
 
 
  export const engine = new Engine({
-    url: ENGINE_URI,
+    url: 'https://sg.gmetarave.asia/webthree',
     accessToken: ENGINE_ACCESS_TOKEN,
   });
   
