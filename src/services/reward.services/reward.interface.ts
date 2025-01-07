@@ -23,7 +23,7 @@ export interface PersonalMission {
  */
 interface PersonalMissionRequirement {
 	criteria: {
-		type: "unique_songs" | "score";
+		type: "uniqueSongs" | "score";
 		value: number;
 		description: string;
         reward: { name: string, amount: number };

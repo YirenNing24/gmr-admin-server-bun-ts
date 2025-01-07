@@ -10,7 +10,7 @@ export const personalMissionSchema = {
 		requirement: t.Object({
 			criteria: t.Object({
 				type: t.Union([
-					t.Literal("unique_songs"),
+					t.Literal("uniqueSongs"),
 					t.Literal("score")
 				]),
 				value: t.Number(),
