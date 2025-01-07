@@ -22,12 +22,13 @@ const reward = (app: Elysia): void => {
 
         return output
        } catch (error: any) {
+         console.log(error)
          return error
         } 
       }, personalMissionSchema
     );
 
-    
+
     app.post('/reward/create/collection-mission', async ({ headers, body }) => {
         try {
             const authorizationHeader: string = headers.authorization;
@@ -41,9 +42,10 @@ const reward = (app: Elysia): void => {
     
             return output
            } catch (error: any) {
+             console.log(error)
              return error
             } 
-    },  collectionMissionSchema
+        },  collectionMissionSchema
     );
 
     

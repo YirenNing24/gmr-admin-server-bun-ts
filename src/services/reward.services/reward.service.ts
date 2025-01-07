@@ -35,7 +35,7 @@ class RewardService {
 	}
 
 	// Create a collection mission
-	public async createCollectionMission(token: string, missionData: CollectionMission): Promise<void> {
+	public async createCollectionMission(token: string, missionData: CollectionMission) {
 		const tokenService: TokenService = new TokenService();
 		try {
 			const username: string = await tokenService.verifyAccessToken(token);
@@ -49,6 +49,8 @@ class RewardService {
 			};
 
 			await collection.insertOne(newMission);
+
+			return ({ message: "Personal mission created successfully" });
 		} catch (error: any) {
 			console.error("Error creating collection mission:", error);
 			throw error;
