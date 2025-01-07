@@ -58,8 +58,10 @@ class RewardService {
 	}
 
 	// Get all personal missions
-	public async getPersonalMissions(): Promise<PersonalMission[]> {
+	public async getPersonalMissions(token: string): Promise<PersonalMission[]> {
+		const tokenService: TokenService = new TokenService();
 		try {
+			await tokenService.verifyAccessToken(token);
 			const client: MongoClient = await mongoDBClient.connect();
 			const collection = client.db("beats").collection("personalMissions");
 
@@ -74,8 +76,10 @@ class RewardService {
 	}
 
 	// Get all collection missions
-	public async getCollectionMissions(): Promise<CollectionMission[]> {
+	public async getCollectionMissions(token: string): Promise<CollectionMission[]> {
+		const tokenService: TokenService = new TokenService();
 		try {
+			await tokenService.verifyAccessToken(token);
 			const client: MongoClient = await mongoDBClient.connect();
 			const collection = client.db("beats").collection("collectionMissions");
 
