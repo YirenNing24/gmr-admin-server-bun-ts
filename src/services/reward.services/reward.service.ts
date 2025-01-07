@@ -26,6 +26,8 @@ class RewardService {
 			};
 
 			await collection.insertOne(newMission);
+
+			return ({ message: "Personal mission created successfully" });
 		} catch (error: any) {
 			console.error("Error creating personal mission:", error);
 			throw error;
