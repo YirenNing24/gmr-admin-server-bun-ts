@@ -6,6 +6,7 @@ export const personalMissionSchema = {
 	}),
 	body: t.Object({
 		name: t.String(),
+		missionType: t.Literal("personal"),
 		description: t.String(),
 		requirement: t.Object({
 			criteria: t.Object({
@@ -13,10 +14,13 @@ export const personalMissionSchema = {
 					t.Literal("uniqueSongs"),
 					t.Literal("score")
 				]),
-				value: t.Number(),
+				value: t.Number(), //how many score or songs to achieve
+				group: t.Optional(t.String()), // Optional field for specific groups
 				description: t.String(),
 				reward: t.Object({
 					name: t.String(),
+					cards: t?.Array(t.String()),
+					beats: t?.Number(),
 					amount: t.Number()
 				})
 			})
@@ -31,6 +35,7 @@ export const collectionMissionSchema = {
 	}),
 	body: t.Object({
 		name: t.String(),
+		missionType: t.Literal("collection"),
 		description: t.String(),
 		requirement: t.Object({
 			criteria: t.Object({
@@ -43,6 +48,8 @@ export const collectionMissionSchema = {
 				description: t.String(),
 				reward: t.Object({
 					name: t.String(),
+					cards: t?.Array(t.String()),
+					beats: t?.Number(),
 					amount: t.Number()
 				})
 			})

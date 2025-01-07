@@ -8,6 +8,7 @@
  */
 export interface PersonalMission {
 	name: string;
+	missionType: 'personal';
 	description: string;
 	requirement: PersonalMissionRequirement;
 }
@@ -25,8 +26,9 @@ interface PersonalMissionRequirement {
 	criteria: {
 		type: "uniqueSongs" | "score";
 		value: number;
+		group?: string;
 		description: string;
-        reward: { name: string, amount: number };
+        reward: { name: string, cards?: Array<any>, beats?: number, amount: number };
 	};
 }
 
@@ -41,6 +43,7 @@ interface PersonalMissionRequirement {
  */
 export interface CollectionMission {
 	name: string;
+	missionType: 'collection';
 	description: string;
 	requirement: CollectionMissionRequirement;
 }
@@ -62,6 +65,6 @@ interface CollectionMissionRequirement {
 		value: number;
 		group?: string; // Optional, only needed for specific groups
 		description: string;
-		reward: { name: string, amount: number };
+        reward: { name: string, cards?: Array<any>, beats?: number, amount: number };
 	};
 }
