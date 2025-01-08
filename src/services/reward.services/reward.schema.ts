@@ -19,7 +19,7 @@ export const personalMissionSchema = {
 				description: t.String(),
 				reward: t.Object({
 					name: t.String(),
-					cards: t?.Array(t.String()),
+					cards: t?.Array(t?.String()),
 					beats: t?.Number(),
 					amount: t.Number()
 				})
