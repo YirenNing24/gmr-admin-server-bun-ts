@@ -49,6 +49,7 @@ const reward = (app: Elysia): void => {
         },  collectionMissionSchema
     );
 
+
     app.get('/reward/get/personal-missions', async ({ headers }) => {
         try {
             const authorizationHeader: string = headers.authorization;
@@ -88,6 +89,7 @@ const reward = (app: Elysia): void => {
         }, authorizationBearerSchema
     );
 
+    
 }
   export default reward;
   

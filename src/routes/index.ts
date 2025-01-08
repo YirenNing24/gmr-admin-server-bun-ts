@@ -8,7 +8,7 @@ import user from "./player.routes";
 import nft from "./nft.routes";
 import songImage from "./songimage.route";
 import gacha from "./gacha.routes";
-
+import reward from "./reward.routes";
 
 const routes = (app: any): void => {
     [
@@ -20,7 +20,8 @@ const routes = (app: any): void => {
         user,
         nft,
         songImage,
-        gacha
+        gacha,
+        reward
     ].forEach(route => route(app))
 };
 
