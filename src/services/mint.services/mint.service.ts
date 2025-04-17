@@ -11,7 +11,7 @@ import ContractService from '../contract.services/contracts.service';
 
 //** TYPE IMPORTS
 import { Contracts } from '../contract.services/contracts.interface';
-import { CreateCard, CreatePack, SuccessMessage } from './mint.interface';
+import { CreateCard, CreatePack, SuccessMessage, UpgradeItemData } from './mint.interface';
 import { MintedCardMetaData, MintedPackMetaData } from '../stocks.services/stocks.interface';
 
 //** BUFFER IMPORT
@@ -266,64 +266,43 @@ class MintService {
 
     //NOT UPGRADED YET!!!
 
-    // public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData): Promise<SuccessMessage> {
-    //     const tokenService: TokenService = new TokenService();
-    //     const username: string = await tokenService.verifyAccessToken(token);
-    //     try {
-    //         const contractAddress = await this.retrieveContracts(token)
-    //         const { cardItemUpgrade } = contractAddress
-    //         if (!cardItemUpgrade) {
-    //             throw new Error("Edition address is undefined");
-    //         };
+    public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData): Promise<SuccessMessage> {
+        const tokenService: TokenService = new TokenService();
+        const username: string = await tokenService.verifyAccessToken(token);
+        try {
+            const contractAddress = await this.retrieveContracts(token)
+            const { cardItemUpgrade } = contractAddress
+            if (!cardItemUpgrade) {
+                throw new Error("Edition address is undefined");
+            };
+
+
+            const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
+            const buffer: Buffer = Buffer.from(byteImage);
+
+            const imageUri = await uploadImage(buffer, "Upgrade Item");
+            
+            const supply: number = upgradeItemData.quantity;
+            const metadataWithSupply = Array.from({ length: supply }, () => ({
+                metadata: { ...upgradeItemData, image: imageUri, uploader: "beats" },
+                supply: "1" }
+            )); // Each item has a supply of 1
 
 
 
-    //         const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
-    //         const buffer: Buffer = Buffer.from(byteImage);
+            const requestBody = {
+                receiver: TREASURY_WALLET,
+                metadataWithSupply,
+            };
+            await engine.erc1155.mintBatchTo(CHAIN, cardItemUpgrade, ENGINE_ADMIN_WALLET_ADDRESS, requestBody);
 
-    //         const imageUri = uploadImage(buffer, "Upgrade Item")
+            return { success: "Card item upgrade has been created"} as SuccessMessage
+        } catch(error: any) {
+            console.log(error);
+            throw error;
 
-
-
-
-    //         const {imageByte, quantity, ...metadata } = upgradeItemData
-    //         const namedMetada = {...metadata, name: }
-
-    //         // const stringQuantity: string = quantity.toString();
-    //         // const metadataWithSupply: MetadataWithSupply[] = Array(1).fill({
-    //         //     supply: stringQuantity,
-    //         //     metadata: { 
-    //         //         ...itemData, 
-    //         //         image: imageUri,
-    //         //         uploader: "beats"
-    //         //     }
-    //         // });
-
-
-    //         const metadataWithSupply = Array.from({ length: 1 }, () => ({
-    //             metadata: { metadata, image: imageUri, uploader: "beats",},
-    //             supply: "1" })); // Each item has a supply of 1
-
-
-
-    //         const requestBody = {
-    //             receiver: TREASURY_WALLET,
-    //             metadataWithSupply,
-    //         };
-
-    //         await engine.erc1155.mintBatchTo(CHAIN, cardItemUpgrade, ENGINE_ADMIN_WALLET_ADDRESS, requestBody)
-
-    //         //@ts-ignore
-    //         const stocks: MintedUpgradeItemMetadata[] = await cardUpgradeContract.erc1155.getOwned();
-    //         await this.saveUpgradeItemToMemgraph(stocks, cardItemUpgrade, username);
-
-    //         return { success: "Card item upgrade has been created"} as SuccessMessage
-    //     } catch(error: any) {
-    //         console.log(error);
-    //         throw error;
-
-    //     }
-    // }
+        }
+    }
 
 
     // private async saveUpgradeItemToMemgraph(stocks: MintedUpgradeItemMetadata[], editionAddress: string, uploaderBeats: string,): Promise<void> {

@@ -113,53 +113,32 @@ class StockService {
     //         return endTime >= currentDate;
     //     });
     public async cardListed(token: string): Promise<CardData[] | Error> {
-        const listService: ListService = new ListService(this.driver);
-        const contracts: CardListingContracts = await listService.retrieveContracts(token);
-    
+        const listService = new ListService(this.driver);
+        const contracts = await listService.retrieveContracts(token);
         const { cardAssetAddress, marketplaceAddress } = contracts;
     
         try {
             // Fetch all valid listings
             const listed = (await engine.marketplaceDirectListings.getAllValid(CHAIN, marketplaceAddress)).result;
-
-
-            console.log("listed: ", listed)
     
-            // Prepare the final array of card data
-            let finalCardData: any[] = [];
+            console.log("listed: ", listed);
     
-            // Iterate through listed tokenIds and fetch their metadata
-            for (const listing of listed) {
-                const tokenId: string = listing.tokenId;
+            // Transform listings into CardData format
+            const finalCardData: CardData[] = listed.map((listing) => ({
+                ...listing.asset, // Spread metadata from asset
+                tokenId: listing.asset.id, // Map asset.id to tokenId
+                pricePerToken: Number(BigInt(listing.pricePerToken) / BigInt(10 ** 18)), // Scale price
+                currencyName: listing.currencyValuePerToken?.name || "",
+                listingId: listing.id, // Keep listing ID
+            }));
     
-                // Fetch metadata for the current tokenId
-                const cardData = (await engine.erc1155.get(tokenId, CHAIN, cardAssetAddress)).result;
-                
-
-                console.log("datacard: ", cardData)
-    
-                // Combine tokenId and spread the metadata and cardData into a single object
-                //@ts-ignore
-                const card: CardData = {
-                    ...cardData.metadata, // Spread metadata key-value pairs
-                    tokenId, // Add tokenId
-                    owner: cardData.owner, // Add owner property
-                    type: cardData.type, // Add type property
-                    supply: cardData.supply, // Add supply property
-                    quantityOwned: cardData.quantityOwned, // Add quantityOwned property
-                };
-    
-                // Push the combined object to the final array
-                finalCardData.push(cardData);
-            }
-    
-            // Return the final array of card data
             return finalCardData;
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error in cardListed:", error.message);
             return error;
         }
     }
+    
     
     
     public async cardSold(token: string): Promise<CardData[] | Error> {
