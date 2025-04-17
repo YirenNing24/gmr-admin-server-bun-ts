@@ -283,7 +283,7 @@ class MintService {
             
             const supply: number = upgradeItemData.quantity;
             const metadataWithSupply = Array.from({ length: 1 }, () => ({
-                metadata: { ...metadata, image: imageUri, uploader: "beats" },
+                metadata: { ...metadata, image: imageUri, uploader: "beats", },
                 supply: supply.toString() }
             )); 
 

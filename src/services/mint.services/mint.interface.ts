@@ -247,6 +247,7 @@ export interface UpgradeItemData {
     uri?: string;
     imageByte: string;
     id?: string;
+    name?: string;
 }
 
 /**

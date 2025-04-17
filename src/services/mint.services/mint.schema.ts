@@ -75,6 +75,7 @@ export const createUpgradeItemSchema ={
         experience: t.Number(),
         minted: t.Boolean(),
         imageByte: t.String(),
+        name: t.String()
   
     })
 
