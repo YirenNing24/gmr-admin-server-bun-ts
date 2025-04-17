@@ -275,13 +275,15 @@ class MintService {
 
 
             const byteImage: number[] = JSON.parse(upgradeItemData.imageByte);
+
+            const { imageByte, ...metadata } = upgradeItemData
             const buffer: Buffer = Buffer.from(byteImage);
 
             const imageUri = await uploadImage(buffer, "Upgrade Item");
             
             const supply: number = upgradeItemData.quantity;
             const metadataWithSupply = Array.from({ length: supply }, () => ({
-                metadata: { ...upgradeItemData, image: imageUri, uploader: "beats" },
+                metadata: { ...metadata, image: imageUri, uploader: "beats" },
                 supply: "1" }
             )); 
 
