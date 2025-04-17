@@ -67,11 +67,8 @@ class MintService {
             };
 
              await engine.erc1155.mintBatchTo(CHAIN, editionAddress, ENGINE_ADMIN_WALLET_ADDRESS, requestBody);
-             const cards = await engine.erc1155.getAll(CHAIN, editionAddress);
-             const mintedCardArray = cards.result
 
-             //@ts-ignore
-             this.saveCardToMemgraph(mintedCardArray, editionAddress, username);
+
             return { success: "Card mint is successful" } as SuccessMessage;
         } catch (error: any) {
             console.log(error)
@@ -268,7 +265,7 @@ class MintService {
 
     public async createUpgradeItem(token: string, upgradeItemData: UpgradeItemData): Promise<SuccessMessage> {
         const tokenService: TokenService = new TokenService();
-        const username: string = await tokenService.verifyAccessToken(token);
+        await tokenService.verifyAccessToken(token);
         try {
             const contractAddress = await this.retrieveContracts(token)
             const { cardItemUpgrade } = contractAddress
@@ -286,7 +283,7 @@ class MintService {
             const metadataWithSupply = Array.from({ length: supply }, () => ({
                 metadata: { ...upgradeItemData, image: imageUri, uploader: "beats" },
                 supply: "1" }
-            )); // Each item has a supply of 1
+            )); 
 
 
 
