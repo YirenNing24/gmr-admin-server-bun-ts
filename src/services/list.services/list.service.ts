@@ -173,6 +173,15 @@ constructor(driver: Driver) {
                     currencyContractAddress
                 };
 
+
+                console.log("Listing data: ", listingData)
+
+                
+
+
+
+
+
                 await engine.marketplaceDirectListings.createListing(CHAIN, cardUpgradeItemMarketplaceAddress, TREASURY_WALLET, listingData);
 
                 return { success: "Card upgrade listing is successful" } as SuccessMessage;             
