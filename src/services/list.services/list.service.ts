@@ -167,8 +167,8 @@ constructor(driver: Driver) {
                     quantity: quantityToString, 
                     isReservedListing: false, 
                     pricePerToken: priceToString, 
-                    endTimestamp: endTimestamp.getTime(), 
-                    startTimestamp: startTimestamp.getTime(), 
+                    endTimestamp: undefined, 
+                    startTimestamp: undefined, 
                     assetContractAddress: cardUpgradeItemAddress, 
                     currencyContractAddress
                 };
