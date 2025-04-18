@@ -93,12 +93,7 @@ constructor(driver: Driver) {
                 }
             }
 
-            const matchingListing = cardListingsArray.find(listing => listing.tokenId === listingData.tokenId);
 
-            const listingIdString: string = matchingListing?.id as string;
-            const listingId: number = parseInt(listingIdString);
-
-            await this.saveCardListToDB(lister, listing, listingId);
             return { success: "Card listing is successful" } as SuccessMessage;
         } catch (error: any) {
             console.log(error);
@@ -165,24 +160,20 @@ constructor(driver: Driver) {
                     throw new Error("Invalid currency name specified");
                 }
 
+                const quantityToString = `${quantity}`;
+                const priceToString = `${pricePerToken}`;
                 const listingData = { 
                     tokenId, 
-                    quantity, 
+                    quantity: quantityToString, 
                     isReservedListing: false, 
-                    pricePerToken, 
-                    endTimestamp, 
-                    startTimestamp, 
+                    pricePerToken: priceToString, 
+                    endTimestamp: endTimestamp.getTime(), 
+                    startTimestamp: startTimestamp.getTime(), 
                     assetContractAddress: cardUpgradeItemAddress, 
                     currencyContractAddress
                 };
 
-                // Create a listing on the marketplace
-                const cardMarketplace: MarketplaceV3 = await sdk.getContract(cardUpgradeItemMarketplaceAddress, 'marketplace-v3')
-                const transaction: TransactionResultWithId = await cardMarketplace.directListings.createListing(listingData);
-
-                const listingId: number = transaction.id.toNumber()
-
-                await this.saveCardUpgradeListToDB(lister, upgradeItemListing, listingId);
+                await engine.marketplaceDirectListings.createListing(CHAIN, cardUpgradeItemMarketplaceAddress, TREASURY_WALLET, listingData);
 
                 return { success: "Card upgrade listing is successful" } as SuccessMessage;             
             } catch(error: any) {
